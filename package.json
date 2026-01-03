@@ -56,5 +56,13 @@
   "packageManager": "yarn@3.2.3",
   "engines": {
     "node": ">=20.18.3"
+  },
+  "dependencies": {
+    "@babel/runtime": "^7.28.4",
+    "@types/qrcode.react": "^3.0.0",
+    "@zxing/library": "^0.21.3",
+    "qrcode.react": "^4.2.0",
+    "react-qr-scanner": "^1.0.0-alpha.11",
+    "react-webcam": "^7.2.0"
   }
 }

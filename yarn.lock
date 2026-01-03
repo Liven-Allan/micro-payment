@@ -123,7 +123,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@babel/runtime@npm:^7.12.5, @babel/runtime@npm:^7.21.0, @babel/runtime@npm:^7.25.0, @babel/runtime@npm:^7.26.0":
+"@babel/runtime@npm:^7.12.5, @babel/runtime@npm:^7.21.0, @babel/runtime@npm:^7.25.0, @babel/runtime@npm:^7.26.0, @babel/runtime@npm:^7.28.4":
   version: 7.28.4
   resolution: "@babel/runtime@npm:7.28.4"
   checksum: 934b0a0460f7d06637d93fcd1a44ac49adc33518d17253b5a0b55ff4cb90a45d8fe78bf034b448911dbec7aff2a90b918697559f78d21c99ff8dbadae9565b55
@@ -3689,6 +3689,7 @@ __metadata:
     "@trivago/prettier-plugin-sort-imports": ~4.3.0
     "@types/node": ~18.19.50
     "@types/react": ~19.0.7
+    "@zxing/library": ^0.21.3
     abitype: 1.0.6
     autoprefixer: ~10.4.20
     bgipfs: ~0.0.12
@@ -3709,6 +3710,7 @@ __metadata:
     react: ~19.2.3
     react-dom: ~19.2.3
     react-hot-toast: ~2.4.0
+    react-webcam: ^7.2.0
     tailwindcss: 4.1.3
     type-fest: ~4.26.1
     typescript: ~5.8.2
@@ -5102,6 +5104,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/qrcode.react@npm:^3.0.0":
+  version: 3.0.0
+  resolution: "@types/qrcode.react@npm:3.0.0"
+  dependencies:
+    qrcode.react: "*"
+  checksum: 8ce11d0455fca9a898f6e9d499529526671c5e398f44cf2bc507ad84e1e4982ff0f384261e52b16b933bdd1d6db6bef27b437f90bb804a039ddfe21112d19da5
+  languageName: node
+  linkType: hard
+
 "@types/qrcode@npm:~1.5.5":
   version: 1.5.6
   resolution: "@types/qrcode@npm:1.5.6"
@@ -6287,6 +6298,39 @@ __metadata:
     multiformats: ^13.3.1
     uint8arrays: ^5.1.0
   checksum: 547d30007132bbfeaf3c0af608db05f2bda595525a269077d9b19add11e513e7d0290b2cea63db1e33dbf7eb919c99d71d448f83591a27786e3627c8cbf9d10f
+  languageName: node
+  linkType: hard
+
+"@zxing/library@npm:^0.19.1":
+  version: 0.19.3
+  resolution: "@zxing/library@npm:0.19.3"
+  dependencies:
+    "@zxing/text-encoding": ~0.9.0
+    ts-custom-error: ^3.2.1
+  dependenciesMeta:
+    "@zxing/text-encoding":
+      optional: true
+  checksum: 2a3adaccbde0e075ee4c3c73ab7fa9306be979dafeff6d373204470ea3cddab88608c6eca5e891c7d5e693c5df0f0664e14ea0a74d38e0658fc7464f5c986474
+  languageName: node
+  linkType: hard
+
+"@zxing/library@npm:^0.21.3":
+  version: 0.21.3
+  resolution: "@zxing/library@npm:0.21.3"
+  dependencies:
+    "@zxing/text-encoding": ~0.9.0
+    ts-custom-error: ^3.2.1
+  dependenciesMeta:
+    "@zxing/text-encoding":
+      optional: true
+  checksum: 934e86129b8bb89896884e3cc6805965998ff545edbca2a0ad560d51f9614f2c852dbd437814f1f9b15bcdfca34c958815dc7b676ee6b8b1b0917b41d5effca4
+  languageName: node
+  linkType: hard
+
+"@zxing/text-encoding@npm:~0.9.0":
+  version: 0.9.0
+  resolution: "@zxing/text-encoding@npm:0.9.0"
+  checksum: c23b12aee7639382e4949961304a1294776afaffa40f579e09ffecd0e5e68cf26ef3edd75009de46da8a536e571448755ca68b3e2ea707d53793c0edb2e2c34a
   languageName: node
   linkType: hard
 
@@ -15436,6 +15480,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"qrcode.react@npm:*, qrcode.react@npm:^4.2.0":
+  version: 4.2.0
+  resolution: "qrcode.react@npm:4.2.0"
+  peerDependencies:
+    react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
+  checksum: fe7f496bb3696eedf4113390c6feda386e7a5e5d69d12fcc2489c55ecec467f682dc99b0d8085afbeb8ed3962c1f7554b26225cd78b72e78416f9506abbebd5d
+  languageName: node
+  linkType: hard
+
 "qrcode.react@npm:~4.0.1":
   version: 4.0.1
   resolution: "qrcode.react@npm:4.0.1"
@@ -15611,6 +15664,19 @@ __metadata:
   languageName: node
   linkType: hard
 
+"react-qr-scanner@npm:^1.0.0-alpha.11":
+  version: 1.0.0-alpha.11
+  resolution: "react-qr-scanner@npm:1.0.0-alpha.11"
+  dependencies:
+    "@zxing/library": ^0.19.1
+    prop-types: ^15.8.1
+  peerDependencies:
+    react: ^17.0.0 || ^18.0.0
+    react-dom: ^17.0.0 || ^18.0.0
+  checksum: 554564552bb8109ea4dbc1b8467d91fbfc8399e6e8d566a4b618de6e3e8b469da3d53e92056a80a7349f9b18a97e526d8e45743318ee952da47599c5c8b3b5d0
+  languageName: node
+  linkType: hard
+
 "react-remove-scroll-bar@npm:^2.3.7":
   version: 2.3.8
   resolution: "react-remove-scroll-bar@npm:2.3.8"
@@ -15659,6 +15725,16 @@ __metadata:
     "@types/react":
       optional: true
   checksum: a7b0bf493c9231065ebafa84c4237aed997c746c561196121b7de82fe155a5355b372db5070a3ac9fe980cf7f60dc0f1e8cf6402a2aa5b2957392932ccf76e76
+  languageName: node
+  linkType: hard
+
+"react-webcam@npm:^7.2.0":
+  version: 7.2.0
+  resolution: "react-webcam@npm:7.2.0"
+  peerDependencies:
+    react: ">=16.2.0"
+    react-dom: ">=16.2.0"
+  checksum: 55aecc9e33ea711525f9b68a7c14c9cf4089777b9edd6d9c93813568d701a101f3da09ffd7df04b64eca8c9783a37830522376049589699c6015555ec8d7ccd8
   languageName: node
   linkType: hard
 
@@ -16184,8 +16260,14 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "se-2@workspace:."
   dependencies:
+    "@babel/runtime": ^7.28.4
+    "@types/qrcode.react": ^3.0.0
+    "@zxing/library": ^0.21.3
     husky: ~9.1.6
     lint-staged: ~13.2.2
+    qrcode.react: ^4.2.0
+    react-qr-scanner: ^1.0.0-alpha.11
+    react-webcam: ^7.2.0
   languageName: unknown
   linkType: soft
 
@@ -17458,6 +17540,13 @@ __metadata:
   bin:
     write-markdown: dist/write-markdown.js
   checksum: 7c0a7582e94f1d2160e3dd379851ec4f1758bc673ccd71bae07f839f83051b6b83e0ae14325c2d04ea728e5bde7b7eacfd2ab060b8fd4b8ab29e0bbf77f6c51e
+  languageName: node
+  linkType: hard
+
+"ts-custom-error@npm:^3.2.1":
+  version: 3.3.1
+  resolution: "ts-custom-error@npm:3.3.1"
+  checksum: 50a1e825fced68d70049bd8d282379a635e43aa023a370fa8e736b12a6edba7f18a2d731fa194ac35303a8b625be56e121bdb31d8a0318250d1a8b277059fce3
   languageName: node
   linkType: hard
 

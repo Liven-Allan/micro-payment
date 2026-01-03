@@ -52,6 +52,16 @@ const config: HardhatUserConfig = {
         url: `https://eth-mainnet.alchemyapi.io/v2/${providerApiKey}`,
         enabled: process.env.MAINNET_FORKING_ENABLED === "true",
       },
+      // Enable CORS for frontend connections
+      allowUnlimitedContractSize: true,
+      accounts: {
+        mnemonic: "test test test test test test test test test test test junk",
+      },
+    },
+    localhost: {
+      url: "http://127.0.0.1:8545",
+      // Enable CORS headers
+      allowUnlimitedContractSize: true,
     },
     mainnet: {
       url: "https://mainnet.rpc.buidlguidl.com",

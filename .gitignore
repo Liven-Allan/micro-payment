@@ -43,7 +43,11 @@ packages/hardhat/typechain-types/
 packages/nextjs/.next/
 packages/nextjs/out/
 
+<<<<<<< Updated upstream
 # Hardhat temporary files
+=======
+# Hardhat files
+>>>>>>> Stashed changes
 packages/hardhat/dir
 packages/hardhat/hardhat
 packages/hardhat/nextjs
