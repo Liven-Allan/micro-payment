@@ -21,3 +21,30 @@ node_modules
 
 # cli
 dist
+
+# Documentation files (step-by-step guides)
+STEP_1_SUMMARY.md
+STEP_2_SUMMARY.md
+STEP_3_DOCUMENTATION.md
+SMART_CONTRACT_DOCUMENTATION.md
+start-local-chain.md
+
+# Build artifacts
+packages/hardhat/artifacts/
+packages/hardhat/cache/
+packages/hardhat/typechain-types/
+
+# Environment files
+.env
+.env.local
+.env.production
+
+# Next.js
+packages/nextjs/.next/
+packages/nextjs/out/
+
+# Hardhat temporary files
+packages/hardhat/dir
+packages/hardhat/hardhat
+packages/hardhat/nextjs
+packages/hardhat/npx
