@@ -80,7 +80,6 @@ const MerchantHub = () => {
           await new Promise(resolve => setTimeout(resolve, 2000)); // Wait 2 seconds
           try {
             await Promise.all([refetchMerchantStatus(), refetchMerchantInfo()]);
-            setForceRefresh(prev => prev + 1);
             console.log(`Refresh attempt ${i + 1} completed`);
 
             // Check if we're now registered
@@ -268,7 +267,6 @@ const MerchantHub = () => {
                   console.log("Manual refresh triggered");
                   const result = await refetchMerchantStatus();
                   console.log("Manual refresh result:", result);
-                  setForceRefresh(prev => prev + 1);
                 }}
                 className="w-full bg-gray-500 text-white py-1 px-4 rounded-md hover:bg-gray-600 text-sm mb-4"
               >

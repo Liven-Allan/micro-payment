@@ -38,14 +38,14 @@ const StudentWallet = () => {
   const { data: merchantInfo } = useScaffoldReadContract({
     contractName: "MerchantService",
     functionName: "getMerchantInfo",
-    args: merchantAddress ? [merchantAddress as `0x${string}`] : undefined,
+    args: merchantAddress ? [merchantAddress as `0x${string}`] : ["0x0000000000000000000000000000000000000000"],
   });
 
   // Check if scanned address is a registered merchant
   const { data: isMerchant } = useScaffoldReadContract({
     contractName: "MerchantService",
     functionName: "isMerchant",
-    args: merchantAddress ? [merchantAddress as `0x${string}`] : undefined,
+    args: merchantAddress ? [merchantAddress as `0x${string}`] : ["0x0000000000000000000000000000000000000000"],
   });
 
   // Contract write functions
@@ -207,7 +207,7 @@ const StudentWallet = () => {
 
         {/* Balance Display */}
         <div className="mt-4 p-4 bg-blue-50 rounded-lg">
-          <LiquidBalance address={connectedAddress} className="text-lg" />
+          <LiquidBalance address={connectedAddress as `0x${string}`} className="text-lg" />
         </div>
       </div>
 
