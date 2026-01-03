@@ -6,10 +6,6 @@ import { GenericContractsDeclaration } from "~~/utils/scaffold-eth/contract";
 
 const deployedContracts = {
   31337: {
-<<<<<<< Updated upstream
-    YourContract: {
-      address: "0x5FbDB2315678afecb367f032d93F642f64180aa3",
-=======
     MerchantService: {
       address: "0x2279B7A0a67DB372996a5FaB50D91eAA73d2eBe6",
       abi: [
@@ -1015,7 +1011,6 @@ const deployedContracts = {
     },
     YourContract: {
       address: "0xa513E6E4b8f2a923D98304ec87F64353C4D5C853",
->>>>>>> Stashed changes
       abi: [
         {
           inputs: [
@@ -1156,11 +1151,7 @@ const deployedContracts = {
         },
       ],
       inheritedFunctions: {},
-<<<<<<< Updated upstream
-      deployedOnBlock: 1,
-=======
       deployedOnBlock: 11,
->>>>>>> Stashed changes
     },
   },
 } as const;
