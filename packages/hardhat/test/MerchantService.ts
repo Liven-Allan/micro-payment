@@ -8,7 +8,7 @@ describe("MerchantService", function () {
   let owner: HardhatEthersSigner;
   let merchant: HardhatEthersSigner;
   let student: HardhatEthersSigner;
-  
+
   // Mock Liquid token address (for testing)
   const LIQUID_TOKEN_ADDRESS = "0x11DFC652eb62c723ad8c2ae731FcEdE58aB07564";
 
@@ -39,38 +39,36 @@ describe("MerchantService", function () {
   describe("Merchant Registration", function () {
     it("Should register a merchant successfully", async function () {
       const businessName = "Mama Ntilie's Food Stall";
-      
+
       await expect(merchantService.connect(merchant).registerMerchant(businessName))
         .to.emit(merchantService, "MerchantRegistered")
         .withArgs(merchant.address, businessName);
 
       // Check if merchant is registered
-      expect(await merchantService.isMerchant(merchant.address)).to.be.true;
-      
+      expect(await merchantService.isMerchant(merchant.address)).to.equal(true);
+
       // Check merchant info
       const merchantInfo = await merchantService.getMerchantInfo(merchant.address);
       expect(merchantInfo.businessName).to.equal(businessName);
-      expect(merchantInfo.isActive).to.be.true;
+      expect(merchantInfo.isActive).to.equal(true);
       expect(merchantInfo.totalSales).to.equal(0);
       expect(merchantInfo.transactionCount).to.equal(0);
     });
 
     it("Should not allow duplicate merchant registration", async function () {
       const businessName = "Test Business";
-      
+
       // Register once
       await merchantService.connect(merchant).registerMerchant(businessName);
-      
+
       // Try to register again
-      await expect(
-        merchantService.connect(merchant).registerMerchant(businessName)
-      ).to.be.revertedWith("Already registered as merchant");
+      await expect(merchantService.connect(merchant).registerMerchant(businessName)).to.be.revertedWith(
+        "Already registered as merchant",
+      );
     });
 
     it("Should not allow empty business name", async function () {
-      await expect(
-        merchantService.connect(merchant).registerMerchant("")
-      ).to.be.revertedWith("Business name required");
+      await expect(merchantService.connect(merchant).registerMerchant("")).to.be.revertedWith("Business name required");
     });
   });
 
@@ -90,17 +88,17 @@ describe("MerchantService", function () {
     it("Should allow only owner to toggle merchant status", async function () {
       // Register merchant first
       await merchantService.connect(merchant).registerMerchant("Test Business");
-      
+
       // Non-owner should not be able to toggle
       await expect(
-        merchantService.connect(student).toggleMerchantStatus(merchant.address)
+        merchantService.connect(student).toggleMerchantStatus(merchant.address),
       ).to.be.revertedWithCustomError(merchantService, "OwnableUnauthorizedAccount");
-      
+
       // Owner should be able to toggle
       await merchantService.connect(owner).toggleMerchantStatus(merchant.address);
-      
+
       const merchantInfo = await merchantService.getMerchantInfo(merchant.address);
-      expect(merchantInfo.isActive).to.be.false;
+      expect(merchantInfo.isActive).to.equal(false);
     });
   });
 });

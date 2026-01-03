@@ -1,13 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { useAccount, useWriteContract } from "wagmi";
-import { parseEther } from "viem";
 import { toast } from "react-hot-toast";
-import { useScaffoldWriteContract, useScaffoldReadContract } from "~~/hooks/scaffold-eth";
-import { useLiquidToken } from "~~/hooks/useLiquidToken";
+import { parseEther } from "viem";
+import { useAccount, useWriteContract } from "wagmi";
 import { LiquidBalance } from "~~/components/LiquidBalance";
 import { QRScanner } from "~~/components/QRScanner";
+import { useScaffoldReadContract, useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
+import { useLiquidToken } from "~~/hooks/useLiquidToken";
 
 /**
  * Student Payment Interface - The "Scan & Pay" Experience
@@ -19,19 +19,19 @@ import { QRScanner } from "~~/components/QRScanner";
  */
 const StudentWallet = () => {
   const { address: connectedAddress } = useAccount();
-  
+
   // State management
   const [scannerActive, setScannerActive] = useState(false);
   const [merchantAddress, setMerchantAddress] = useState<string>("");
   const [paymentAmount, setPaymentAmount] = useState<string>("");
   const [isProcessing, setIsProcessing] = useState(false);
   const [step, setStep] = useState<"scan" | "amount" | "confirm" | "processing">("scan");
-  
+
   // Get LIQUID token info and balance
-  const { 
-    formattedBalance, 
-    contractAddress: liquidAddress, 
-    abi: liquidAbi 
+  const {
+    formattedBalance,
+    contractAddress: liquidAddress,
+    abi: liquidAbi,
   } = useLiquidToken(connectedAddress as `0x${string}`);
 
   // Get merchant info to verify it's a valid merchant
@@ -57,7 +57,7 @@ const StudentWallet = () => {
   // Handle QR code scan result
   const handleScan = (data: string) => {
     console.log("QR Code scanned:", data);
-    
+
     // Check if it's a valid Ethereum address
     if (data.match(/^0x[a-fA-F0-9]{40}$/)) {
       setMerchantAddress(data);
@@ -105,18 +105,18 @@ const StudentWallet = () => {
       setStep("processing");
 
       const amountWei = parseEther(paymentAmount);
-      
+
       // Step 1: Approve LIQUID tokens for MerchantService contract
       toast.loading("Step 1/2: Approving LIQUID tokens...", { id: "payment-process" });
-      
+
       approveLiquid({
         address: liquidAddress as `0x${string}`,
         abi: liquidAbi,
         functionName: "approve",
         args: [
-          process.env.NEXT_PUBLIC_MERCHANT_SERVICE_ADDRESS as `0x${string}` || 
-          "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512", // Default local address
-          amountWei
+          (process.env.NEXT_PUBLIC_MERCHANT_SERVICE_ADDRESS as `0x${string}`) ||
+            "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512", // Default local address
+          amountWei,
         ],
       });
 
@@ -139,27 +139,23 @@ const StudentWallet = () => {
       const loyaltyReward = calculateLoyaltyReward(paymentAmount);
 
       // Success!
-      toast.success(
-        `Payment successful! You earned ${loyaltyReward} LIQUID in cashback!`,
-        { 
-          id: "payment-process",
-          duration: 5000 
-        }
-      );
+      toast.success(`Payment successful! You earned ${loyaltyReward} LIQUID in cashback!`, {
+        id: "payment-process",
+        duration: 5000,
+      });
 
       // Show success modal
       showSuccessModal(paymentAmount, loyaltyReward);
 
       // Reset form
       resetForm();
-
     } catch (error: any) {
       console.error("Payment failed:", error);
       toast.error(
-        error?.message?.includes("insufficient") 
-          ? "Insufficient balance or allowance" 
+        error?.message?.includes("insufficient")
+          ? "Insufficient balance or allowance"
           : "Payment failed. Please try again.",
-        { id: "payment-process" }
+        { id: "payment-process" },
       );
     } finally {
       setIsProcessing(false);
@@ -178,7 +174,7 @@ const StudentWallet = () => {
         </div>
       </div>
     );
-    
+
     toast.success(successMessage as any, { duration: 6000 });
   };
 
@@ -196,9 +192,7 @@ const StudentWallet = () => {
         <div className="text-center">
           <h1 className="text-3xl font-bold mb-4">Student Wallet</h1>
           <p className="text-lg mb-4">Please connect your wallet to start making payments</p>
-          <div className="text-sm text-gray-600">
-            Use the "Connect Wallet" button in the top navigation
-          </div>
+          <div className="text-sm text-gray-600">Use the &quot;Connect Wallet&quot; button in the top navigation</div>
         </div>
       </div>
     );
@@ -210,7 +204,7 @@ const StudentWallet = () => {
       <div className="text-center mb-8">
         <h1 className="text-3xl font-bold mb-2">Student Wallet</h1>
         <p className="text-gray-600">Scan & Pay with LIQUID tokens</p>
-        
+
         {/* Balance Display */}
         <div className="mt-4 p-4 bg-blue-50 rounded-lg">
           <LiquidBalance address={connectedAddress} className="text-lg" />
@@ -221,13 +215,18 @@ const StudentWallet = () => {
       {step === "scan" && (
         <div className="bg-white rounded-lg shadow-md p-6">
           <h2 className="text-xl font-semibold mb-4 text-center">Scan Merchant QR Code</h2>
-          
+
           {!scannerActive ? (
             <div className="text-center">
               <div className="mb-4">
                 <div className="w-32 h-32 mx-auto bg-gray-100 rounded-lg flex items-center justify-center mb-4">
                   <svg className="w-16 h-16 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M12 12h-4.01M12 12v4m6-4h.01M12 8h.01M12 8h4.01M12 8h-4.01" />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M12 12h-4.01M12 12v4m6-4h.01M12 8h.01M12 8h4.01M12 8h-4.01"
+                    />
                   </svg>
                 </div>
                 <button
@@ -237,7 +236,7 @@ const StudentWallet = () => {
                   📷 Start Camera Scanner
                 </button>
               </div>
-              
+
               {/* Manual entry option */}
               <div className="mt-4 pt-4 border-t">
                 <p className="text-sm text-gray-600 mb-2">Or enter merchant address manually:</p>
@@ -245,7 +244,7 @@ const StudentWallet = () => {
                   type="text"
                   placeholder="0x..."
                   value={merchantAddress}
-                  onChange={(e) => setMerchantAddress(e.target.value)}
+                  onChange={e => setMerchantAddress(e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
                 />
                 <button
@@ -266,13 +265,9 @@ const StudentWallet = () => {
           ) : (
             <div>
               <div className="mb-4">
-                <QRScanner
-                  onScan={handleScan}
-                  onError={handleScanError}
-                  isActive={scannerActive}
-                />
+                <QRScanner onScan={handleScan} onError={handleScanError} isActive={scannerActive} />
               </div>
-              
+
               <button
                 onClick={() => setScannerActive(false)}
                 className="w-full bg-red-600 text-white py-2 px-4 rounded-md hover:bg-red-700"
@@ -288,17 +283,13 @@ const StudentWallet = () => {
       {step === "amount" && (
         <div className="bg-white rounded-lg shadow-md p-6">
           <h2 className="text-xl font-semibold mb-4 text-center">Enter Payment Amount</h2>
-          
+
           {/* Merchant Info */}
           <div className="mb-6 p-4 bg-gray-50 rounded-lg">
             <div className="text-sm text-gray-600 mb-1">Paying to:</div>
-            <div className="font-semibold">
-              {merchantInfo?.[0] || "Unknown Merchant"}
-            </div>
-            <div className="text-xs text-gray-500 mt-1 font-mono">
-              {merchantAddress}
-            </div>
-            
+            <div className="font-semibold">{merchantInfo?.[0] || "Unknown Merchant"}</div>
+            <div className="text-xs text-gray-500 mt-1 font-mono">{merchantAddress}</div>
+
             {isMerchant ? (
               <div className="text-green-600 text-sm mt-2">✅ Verified Merchant</div>
             ) : (
@@ -308,22 +299,20 @@ const StudentWallet = () => {
 
           {/* Amount Input */}
           <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Amount (LIQUID)
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Amount (LIQUID)</label>
             <input
               type="number"
               step="0.0001"
               min="0"
               value={paymentAmount}
-              onChange={(e) => setPaymentAmount(e.target.value)}
+              onChange={e => setPaymentAmount(e.target.value)}
               placeholder="0.0000"
               className="w-full px-4 py-3 border border-gray-300 rounded-md text-lg text-center font-mono"
             />
-            
+
             {/* Quick amount buttons */}
             <div className="grid grid-cols-3 gap-2 mt-3">
-              {["1", "5", "10"].map((amount) => (
+              {["1", "5", "10"].map(amount => (
                 <button
                   key={amount}
                   onClick={() => setPaymentAmount(amount)}
@@ -339,10 +328,8 @@ const StudentWallet = () => {
           {paymentAmount && (
             <div className="mb-6 p-4 bg-green-50 rounded-lg">
               <div className="text-sm text-green-800">
-                <div className="font-semibold">💰 You'll earn cashback:</div>
-                <div className="text-lg font-bold">
-                  {calculateLoyaltyReward(paymentAmount)} LIQUID (5%)
-                </div>
+                <div className="font-semibold">💰 You&apos;ll earn cashback:</div>
+                <div className="text-lg font-bold">{calculateLoyaltyReward(paymentAmount)} LIQUID (5%)</div>
               </div>
             </div>
           )}
@@ -356,7 +343,7 @@ const StudentWallet = () => {
             >
               Review Payment
             </button>
-            
+
             <button
               onClick={() => setStep("scan")}
               className="w-full bg-gray-600 text-white py-2 px-4 rounded-md hover:bg-gray-700"
@@ -371,29 +358,23 @@ const StudentWallet = () => {
       {step === "confirm" && (
         <div className="bg-white rounded-lg shadow-md p-6">
           <h2 className="text-xl font-semibold mb-4 text-center">Confirm Payment</h2>
-          
+
           {/* Payment Summary */}
           <div className="space-y-4 mb-6">
             <div className="p-4 bg-gray-50 rounded-lg">
               <div className="text-sm text-gray-600">Merchant</div>
               <div className="font-semibold">{merchantInfo?.[0] || "Unknown"}</div>
-              <div className="text-xs text-gray-500 font-mono">
-                {merchantAddress}
-              </div>
+              <div className="text-xs text-gray-500 font-mono">{merchantAddress}</div>
             </div>
-            
+
             <div className="p-4 bg-blue-50 rounded-lg">
               <div className="text-sm text-blue-800">Payment Amount</div>
-              <div className="text-2xl font-bold text-blue-900">
-                {paymentAmount} LIQUID
-              </div>
+              <div className="text-2xl font-bold text-blue-900">{paymentAmount} LIQUID</div>
             </div>
-            
+
             <div className="p-4 bg-green-50 rounded-lg">
               <div className="text-sm text-green-800">Loyalty Cashback (5%)</div>
-              <div className="text-xl font-bold text-green-900">
-                +{calculateLoyaltyReward(paymentAmount)} LIQUID
-              </div>
+              <div className="text-xl font-bold text-green-900">+{calculateLoyaltyReward(paymentAmount)} LIQUID</div>
             </div>
           </div>
 
@@ -401,7 +382,15 @@ const StudentWallet = () => {
           <div className="mb-6 p-3 bg-yellow-50 rounded-lg">
             <div className="text-sm">
               <div>Your Balance: {parseFloat(formattedBalance).toFixed(4)} LIQUID</div>
-              <div>After Payment: {(parseFloat(formattedBalance) - parseFloat(paymentAmount) + parseFloat(calculateLoyaltyReward(paymentAmount))).toFixed(4)} LIQUID</div>
+              <div>
+                After Payment:{" "}
+                {(
+                  parseFloat(formattedBalance) -
+                  parseFloat(paymentAmount) +
+                  parseFloat(calculateLoyaltyReward(paymentAmount))
+                ).toFixed(4)}{" "}
+                LIQUID
+              </div>
             </div>
           </div>
 
@@ -414,7 +403,7 @@ const StudentWallet = () => {
             >
               {isProcessing ? "Processing..." : "Confirm & Pay"}
             </button>
-            
+
             <button
               onClick={() => setStep("amount")}
               disabled={isProcessing}
@@ -431,12 +420,8 @@ const StudentWallet = () => {
         <div className="bg-white rounded-lg shadow-md p-6 text-center">
           <div className="animate-spin w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full mx-auto mb-4"></div>
           <h2 className="text-xl font-semibold mb-2">Processing Payment...</h2>
-          <p className="text-gray-600 mb-4">
-            Please wait while we process your transaction
-          </p>
-          <div className="text-sm text-gray-500">
-            This may take a few seconds
-          </div>
+          <p className="text-gray-600 mb-4">Please wait while we process your transaction</p>
+          <div className="text-sm text-gray-500">This may take a few seconds</div>
         </div>
       )}
     </div>

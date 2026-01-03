@@ -1,7 +1,7 @@
 "use client";
 
-import { useAccount, useBalance } from "wagmi";
 import { formatEther } from "viem";
+import { useAccount, useBalance } from "wagmi";
 
 interface LocalBalanceProps {
   address?: `0x${string}`;

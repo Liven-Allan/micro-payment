@@ -24,7 +24,7 @@ const deployMerchantService: DeployFunction = async function (hre: HardhatRuntim
   // For local development, we'll use the mock token
   // In production, this would be the actual Liquid token address: 0x11DFC652eb62c723ad8c2ae731FcEdE58aB07564
   let LIQUID_TOKEN_ADDRESS = "0x11DFC652eb62c723ad8c2ae731FcEdE58aB07564";
-  
+
   // Use mock token on local networks
   if (hre.network.name === "localhost" || hre.network.name === "hardhat") {
     const mockLiquidToken = await hre.ethers.getContract("MockLiquidToken");
@@ -46,7 +46,7 @@ const deployMerchantService: DeployFunction = async function (hre: HardhatRuntim
   const merchantService = await hre.ethers.getContract<Contract>("MerchantService", deployer);
   console.log("👋 MerchantService deployed to:", await merchantService.getAddress());
   console.log("🏪 Liquid Token Address:", LIQUID_TOKEN_ADDRESS);
-  
+
   // Log some initial information
   console.log("📊 Contract Info:");
   console.log("   - Loyalty Rate:", await merchantService.LOYALTY_RATE(), "basis points (5%)");

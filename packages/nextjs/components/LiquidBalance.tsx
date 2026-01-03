@@ -11,19 +11,11 @@ interface LiquidBalanceProps {
  * Component to display LIQUID token balance
  * Uses the SoonPay LIQUID token contract
  */
-export const LiquidBalance = ({ 
-  address, 
-  className = "", 
-  showLabel = true 
-}: LiquidBalanceProps) => {
+export const LiquidBalance = ({ address, className = "", showLabel = true }: LiquidBalanceProps) => {
   const { address: connectedAddress } = useAccount();
   const targetAddress = address || (connectedAddress as `0x${string}` | undefined);
-  
-  const { 
-    formattedBalance, 
-    symbol, 
-    balanceLoading 
-  } = useLiquidToken(targetAddress);
+
+  const { formattedBalance, symbol, balanceLoading } = useLiquidToken(targetAddress);
 
   if (!targetAddress) {
     return (
@@ -45,9 +37,7 @@ export const LiquidBalance = ({
 
   return (
     <div className={`font-mono ${className}`}>
-      {showLabel && (
-        <span className="text-gray-600">LIQUID Balance: </span>
-      )}
+      {showLabel && <span className="text-gray-600">LIQUID Balance: </span>}
       <span className="font-bold text-green-600">
         {parseFloat(formattedBalance).toFixed(4)} {symbol || "LIQUID"}
       </span>
