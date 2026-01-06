@@ -2,12 +2,13 @@
 
 import { useState } from "react";
 import { toast } from "react-hot-toast";
-import { parseEther } from "viem";
+import { parseEther, formatUnits } from "viem";
 import { useAccount, useWriteContract } from "wagmi";
 import { LiquidBalance } from "~~/components/LiquidBalance";
 import { QRScanner } from "~~/components/QRScanner";
 import { useScaffoldReadContract, useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
 import { useLiquidToken } from "~~/hooks/useLiquidToken";
+import deployedContracts from "~~/contracts/deployedContracts";
 
 /**
  * Student Payment Interface - The "Scan & Pay" Experience
@@ -15,7 +16,6 @@ import { useLiquidToken } from "~~/hooks/useLiquidToken";
  * 1. Scan merchant QR codes
  * 2. Enter payment amounts
  * 3. Approve and execute payments
- * 4. Receive loyalty rewards automatically
  */
 const StudentWallet = () => {
   const { address: connectedAddress } = useAccount();
@@ -25,13 +25,15 @@ const StudentWallet = () => {
   const [merchantAddress, setMerchantAddress] = useState<string>("");
   const [paymentAmount, setPaymentAmount] = useState<string>("");
   const [isProcessing, setIsProcessing] = useState(false);
-  const [step, setStep] = useState<"scan" | "amount" | "confirm" | "processing">("scan");
+  const [step, setStep] = useState<"scan" | "amount" | "confirm" | "processing" | "dashboard">("scan");
+  const [refreshBalance, setRefreshBalance] = useState(0);
 
   // Get LIQUID token info and balance
   const {
     formattedBalance,
     contractAddress: liquidAddress,
     abi: liquidAbi,
+    refetchBalance,
   } = useLiquidToken(connectedAddress as `0x${string}`);
 
   // Get merchant info to verify it's a valid merchant
@@ -48,8 +50,15 @@ const StudentWallet = () => {
     args: merchantAddress ? [merchantAddress as `0x${string}`] : ["0x0000000000000000000000000000000000000000"],
   });
 
+  // Get student transaction history
+  const { data: studentTransactions, refetch: refetchTransactions } = useScaffoldReadContract({
+    contractName: "MerchantService",
+    functionName: "getStudentTransactions",
+    args: connectedAddress ? [connectedAddress as `0x${string}`] : ["0x0000000000000000000000000000000000000000"],
+  });
+
   // Contract write functions
-  const { writeContract: approveLiquid } = useWriteContract();
+  const { writeContractAsync: approveLiquid } = useWriteContract();
   const { writeContractAsync: makePayment } = useScaffoldWriteContract({
     contractName: "MerchantService",
   });
@@ -76,11 +85,9 @@ const StudentWallet = () => {
     setScannerActive(false);
   };
 
-  // Calculate loyalty reward (5%)
+  // Calculate loyalty reward (removed - no more rewards)
   const calculateLoyaltyReward = (amount: string) => {
-    if (!amount) return "0";
-    const amountNum = parseFloat(amount);
-    return (amountNum * 0.05).toFixed(4);
+    return "0";
   };
 
   // Process payment
@@ -109,21 +116,31 @@ const StudentWallet = () => {
       // Step 1: Approve LIQUID tokens for MerchantService contract
       toast.loading("Step 1/2: Approving LIQUID tokens...", { id: "payment-process" });
 
-      approveLiquid({
+      // Get the correct MerchantService address from deployed contracts
+      const merchantServiceAddress = deployedContracts[31337]?.MerchantService?.address || "0xA51c1fc2f0D1a1b8494Ed1FE312d7C3a78Ed91C0";
+
+      console.log("=== PAYMENT DEBUG INFO ===");
+      console.log("Student address:", connectedAddress);
+      console.log("Merchant address:", merchantAddress);
+      console.log("Token address:", liquidAddress);
+      console.log("MerchantService address:", merchantServiceAddress);
+      console.log("Payment amount (wei):", amountWei.toString());
+      console.log("Payment amount (ether):", paymentAmount);
+
+      const approvalResult = await approveLiquid({
         address: liquidAddress as `0x${string}`,
         abi: liquidAbi,
         functionName: "approve",
-        args: [
-          (process.env.NEXT_PUBLIC_MERCHANT_SERVICE_ADDRESS as `0x${string}`) ||
-            "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512", // Default local address
-          amountWei,
-        ],
+        args: [merchantServiceAddress as `0x${string}`, amountWei],
       });
 
-      console.log("Approval transaction initiated");
+      console.log("Approval transaction hash:", approvalResult);
 
-      // Wait a moment for approval to be mined
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Step 1.5: Wait for approval to be mined
+      toast.loading("Waiting for approval confirmation...", { id: "payment-process" });
+
+      // Wait for the approval transaction to be mined
+      await new Promise(resolve => setTimeout(resolve, 2000)); // Wait 2 seconds
 
       // Step 2: Execute payment
       toast.loading("Step 2/2: Processing payment...", { id: "payment-process" });
@@ -135,42 +152,48 @@ const StudentWallet = () => {
 
       console.log("Payment transaction:", paymentResult);
 
-      // Calculate loyalty reward for display
-      const loyaltyReward = calculateLoyaltyReward(paymentAmount);
-
       // Success!
-      toast.success(`Payment successful! You earned ${loyaltyReward} LIQUID in cashback!`, {
+      toast.success(`Payment successful! ${paymentAmount} LIQUID sent to merchant.`, {
         id: "payment-process",
         duration: 5000,
       });
 
       // Show success modal
-      showSuccessModal(paymentAmount, loyaltyReward);
+      showSuccessModal(paymentAmount);
+
+      // Force balance refresh and transaction history refresh
+      setRefreshBalance(prev => prev + 1);
+      refetchTransactions();
+      refetchBalance();
 
       // Reset form
       resetForm();
     } catch (error: any) {
-      console.error("Payment failed:", error);
-      toast.error(
-        error?.message?.includes("insufficient")
-          ? "Insufficient balance or allowance"
-          : "Payment failed. Please try again.",
-        { id: "payment-process" },
-      );
+      console.error("=== PAYMENT ERROR ===");
+      console.error("Full error:", error);
+      console.error("Error message:", error?.message);
+      console.error("Error cause:", error?.cause);
+
+      let errorMessage = "Payment failed. Please try again.";
+
+      if (error?.message?.includes("insufficient") || error?.message?.includes("allowance")) {
+        errorMessage = "Insufficient balance or allowance. Please try again.";
+      }
+
+      toast.error(errorMessage, { id: "payment-process" });
     } finally {
       setIsProcessing(false);
     }
   };
 
   // Show success modal
-  const showSuccessModal = (amount: string, reward: string) => {
+  const showSuccessModal = (amount: string) => {
     // Create a custom success notification
     const successMessage = (
       <div className="text-center">
         <div className="text-lg font-bold text-green-600 mb-2">🎉 Payment Successful!</div>
         <div className="text-sm">
           <div>Paid: {amount} LIQUID</div>
-          <div className="text-green-600 font-semibold">Cashback: {reward} LIQUID (5%)</div>
         </div>
       </div>
     );
@@ -206,21 +229,49 @@ const StudentWallet = () => {
         <p className="text-gray-600">Scan & Pay with LIQUID tokens</p>
 
         {/* Balance Display */}
-        <div className="mt-4 p-4 bg-blue-50 rounded-lg">
-          <LiquidBalance address={connectedAddress as `0x${string}`} className="text-lg" />
+        <div className="mt-4 p-4 bg-base-200 rounded-lg">
+          <LiquidBalance 
+            address={connectedAddress as `0x${string}`} 
+            className="text-lg" 
+            key={refreshBalance} 
+          />
+        </div>
+
+        {/* Navigation Buttons */}
+        <div className="mt-4 flex gap-2">
+          <button
+            onClick={() => setStep("scan")}
+            className={`flex-1 py-2 px-4 rounded-md font-medium ${
+              step === "scan" || step === "amount" || step === "confirm" || step === "processing"
+                ? "bg-primary text-primary-content"
+                : "bg-base-200 text-base-content hover:bg-base-300"
+            }`}
+          >
+            💳 Pay
+          </button>
+          <button
+            onClick={() => setStep("dashboard")}
+            className={`flex-1 py-2 px-4 rounded-md font-medium ${
+              step === "dashboard"
+                ? "bg-primary text-primary-content"
+                : "bg-base-200 text-base-content hover:bg-base-300"
+            }`}
+          >
+            📊 History
+          </button>
         </div>
       </div>
 
       {/* Step 1: QR Scanner */}
       {step === "scan" && (
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <h2 className="text-xl font-semibold mb-4 text-center">Scan Merchant QR Code</h2>
+        <div className="bg-base-100 rounded-lg shadow-md p-6">
+          <h2 className="text-xl font-semibold mb-4 text-center text-base-content">Scan Merchant QR Code</h2>
 
           {!scannerActive ? (
             <div className="text-center">
               <div className="mb-4">
-                <div className="w-32 h-32 mx-auto bg-gray-100 rounded-lg flex items-center justify-center mb-4">
-                  <svg className="w-16 h-16 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="w-32 h-32 mx-auto bg-base-200 rounded-lg flex items-center justify-center mb-4">
+                  <svg className="w-16 h-16 text-base-content opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -231,21 +282,21 @@ const StudentWallet = () => {
                 </div>
                 <button
                   onClick={() => setScannerActive(true)}
-                  className="w-full bg-blue-600 text-white py-3 px-4 rounded-md hover:bg-blue-700 font-semibold mb-4"
+                  className="w-full bg-primary text-primary-content py-3 px-4 rounded-md hover:bg-primary-focus font-semibold mb-4"
                 >
                   📷 Start Camera Scanner
                 </button>
               </div>
 
               {/* Manual entry option */}
-              <div className="mt-4 pt-4 border-t">
-                <p className="text-sm text-gray-600 mb-2">Or enter merchant address manually:</p>
+              <div className="mt-4 pt-4 border-t border-base-300">
+                <p className="text-sm text-base-content opacity-70 mb-2">Or enter merchant address manually:</p>
                 <input
                   type="text"
                   placeholder="0x..."
                   value={merchantAddress}
                   onChange={e => setMerchantAddress(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                  className="w-full px-3 py-2 border border-base-300 bg-base-100 text-base-content rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                 />
                 <button
                   onClick={() => {
@@ -256,7 +307,7 @@ const StudentWallet = () => {
                     }
                   }}
                   disabled={!merchantAddress}
-                  className="w-full mt-2 bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 disabled:opacity-50"
+                  className="w-full mt-2 bg-primary text-primary-content py-2 px-4 rounded-md hover:bg-primary-focus disabled:opacity-50"
                 >
                   Continue
                 </button>
@@ -281,25 +332,25 @@ const StudentWallet = () => {
 
       {/* Step 2: Enter Amount */}
       {step === "amount" && (
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <h2 className="text-xl font-semibold mb-4 text-center">Enter Payment Amount</h2>
+        <div className="bg-base-100 rounded-lg shadow-md p-6">
+          <h2 className="text-xl font-semibold mb-4 text-center text-base-content">Enter Payment Amount</h2>
 
           {/* Merchant Info */}
-          <div className="mb-6 p-4 bg-gray-50 rounded-lg">
-            <div className="text-sm text-gray-600 mb-1">Paying to:</div>
-            <div className="font-semibold">{merchantInfo?.[0] || "Unknown Merchant"}</div>
-            <div className="text-xs text-gray-500 mt-1 font-mono">{merchantAddress}</div>
+          <div className="mb-6 p-4 bg-base-200 rounded-lg">
+            <div className="text-sm text-base-content opacity-70 mb-1">Paying to:</div>
+            <div className="font-semibold text-base-content">{merchantInfo?.[0] || "Unknown Merchant"}</div>
+            <div className="text-xs text-base-content opacity-50 mt-1 font-mono">{merchantAddress}</div>
 
             {isMerchant ? (
-              <div className="text-green-600 text-sm mt-2">✅ Verified Merchant</div>
+              <div className="text-success text-sm mt-2">✅ Verified Merchant</div>
             ) : (
-              <div className="text-red-600 text-sm mt-2">⚠️ Unregistered Address</div>
+              <div className="text-error text-sm mt-2">⚠️ Unregistered Address</div>
             )}
           </div>
 
           {/* Amount Input */}
           <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">Amount (LIQUID)</label>
+            <label className="block text-sm font-medium text-base-content mb-2">Amount (LIQUID)</label>
             <input
               type="number"
               step="0.0001"
@@ -307,7 +358,7 @@ const StudentWallet = () => {
               value={paymentAmount}
               onChange={e => setPaymentAmount(e.target.value)}
               placeholder="0.0000"
-              className="w-full px-4 py-3 border border-gray-300 rounded-md text-lg text-center font-mono"
+              className="w-full px-4 py-3 border border-base-300 bg-base-100 text-base-content rounded-md text-lg text-center font-mono focus:outline-none focus:ring-2 focus:ring-primary"
             />
 
             {/* Quick amount buttons */}
@@ -316,7 +367,7 @@ const StudentWallet = () => {
                 <button
                   key={amount}
                   onClick={() => setPaymentAmount(amount)}
-                  className="py-2 px-3 bg-gray-100 hover:bg-gray-200 rounded-md text-sm"
+                  className="py-2 px-3 bg-base-200 hover:bg-base-300 text-base-content rounded-md text-sm"
                 >
                   {amount} LIQUID
                 </button>
@@ -324,29 +375,19 @@ const StudentWallet = () => {
             </div>
           </div>
 
-          {/* Loyalty Preview */}
-          {paymentAmount && (
-            <div className="mb-6 p-4 bg-green-50 rounded-lg">
-              <div className="text-sm text-green-800">
-                <div className="font-semibold">💰 You&apos;ll earn cashback:</div>
-                <div className="text-lg font-bold">{calculateLoyaltyReward(paymentAmount)} LIQUID (5%)</div>
-              </div>
-            </div>
-          )}
-
           {/* Action Buttons */}
           <div className="space-y-3">
             <button
               onClick={() => setStep("confirm")}
               disabled={!paymentAmount || parseFloat(paymentAmount) <= 0}
-              className="w-full bg-blue-600 text-white py-3 px-4 rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed font-semibold"
+              className="w-full bg-primary text-primary-content py-3 px-4 rounded-md hover:bg-primary-focus disabled:opacity-50 disabled:cursor-not-allowed font-semibold"
             >
               Review Payment
             </button>
 
             <button
               onClick={() => setStep("scan")}
-              className="w-full bg-gray-600 text-white py-2 px-4 rounded-md hover:bg-gray-700"
+              className="w-full bg-base-300 text-base-content py-2 px-4 rounded-md hover:bg-base-200"
             >
               Back to Scanner
             </button>
@@ -372,10 +413,6 @@ const StudentWallet = () => {
               <div className="text-2xl font-bold text-blue-900">{paymentAmount} LIQUID</div>
             </div>
 
-            <div className="p-4 bg-green-50 rounded-lg">
-              <div className="text-sm text-green-800">Loyalty Cashback (5%)</div>
-              <div className="text-xl font-bold text-green-900">+{calculateLoyaltyReward(paymentAmount)} LIQUID</div>
-            </div>
           </div>
 
           {/* Balance Check */}
@@ -383,13 +420,7 @@ const StudentWallet = () => {
             <div className="text-sm">
               <div>Your Balance: {parseFloat(formattedBalance).toFixed(4)} LIQUID</div>
               <div>
-                After Payment:{" "}
-                {(
-                  parseFloat(formattedBalance) -
-                  parseFloat(paymentAmount) +
-                  parseFloat(calculateLoyaltyReward(paymentAmount))
-                ).toFixed(4)}{" "}
-                LIQUID
+                After Payment: {(parseFloat(formattedBalance) - parseFloat(paymentAmount)).toFixed(4)} LIQUID
               </div>
             </div>
           </div>
@@ -422,6 +453,175 @@ const StudentWallet = () => {
           <h2 className="text-xl font-semibold mb-2">Processing Payment...</h2>
           <p className="text-gray-600 mb-4">Please wait while we process your transaction</p>
           <div className="text-sm text-gray-500">This may take a few seconds</div>
+        </div>
+      )}
+
+      {/* Step 5: Dashboard */}
+      {step === "dashboard" && (
+        <div className="bg-base-100 rounded-lg shadow-md p-6">
+          <h2 className="text-xl font-semibold mb-4 text-center text-base-content">Spending Dashboard</h2>
+
+          {/* Current Balance */}
+          <div className="mb-6 p-4 bg-gradient-to-r from-primary from-opacity-10 to-success to-opacity-10 rounded-lg border border-primary border-opacity-20">
+            <div className="text-center">
+              <div className="text-sm text-base-content opacity-70 mb-1">Current Balance</div>
+              <div className="text-3xl font-bold text-green-600">
+                {parseFloat(formattedBalance).toFixed(4)} LIQUID
+              </div>
+            </div>
+          </div>
+
+          {/* Summary Stats */}
+          <div className="grid grid-cols-2 gap-4 mb-6">
+            <div className="p-4 bg-info bg-opacity-20 rounded-lg text-center border border-info border-opacity-30">
+              <div className="text-2xl font-bold text-blue-600">
+                {studentTransactions?.length || 0}
+              </div>
+              <div className="text-sm text-blue-800">Total Payments</div>
+            </div>
+            <div className="p-4 bg-error bg-opacity-20 rounded-lg text-center border border-error border-opacity-30">
+              <div className="text-2xl font-bold text-red-600">
+                {studentTransactions?.reduce((total, tx) => {
+                  return total + parseFloat(formatUnits(tx.amount, 18));
+                }, 0).toFixed(2) || "0.00"}
+              </div>
+              <div className="text-sm text-red-800">Total Spent (LIQUID)</div>
+            </div>
+          </div>
+
+          {/* Quick Stats */}
+          {studentTransactions && studentTransactions.length > 0 && (
+            <div className="mb-6 p-4 bg-base-200 rounded-lg">
+              <div className="text-sm text-base-content opacity-70 mb-2">Quick Stats</div>
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <span className="text-base-content opacity-60">Largest Payment:</span>
+                  <div className="font-semibold text-gray-900">
+                    {Math.max(...studentTransactions.map(tx => parseFloat(formatUnits(tx.amount, 18)))).toFixed(4)} LIQUID
+                  </div>
+                </div>
+                <div>
+                  <span className="text-base-content opacity-60">Average Payment:</span>
+                  <div className="font-semibold text-gray-900">
+                    {(studentTransactions.reduce((total, tx) => total + parseFloat(formatUnits(tx.amount, 18)), 0) / studentTransactions.length).toFixed(4)} LIQUID
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Transaction History */}
+          <div className="mb-4">
+            <h3 className="text-lg font-semibold mb-3 text-base-content">Recent Transactions</h3>
+            
+            {!studentTransactions || studentTransactions.length === 0 ? (
+              <div className="text-center py-8 text-base-content opacity-60">
+                <div className="text-4xl mb-2">💳</div>
+                <div>No transactions yet</div>
+                <div className="text-sm">Make your first payment to see it here!</div>
+              </div>
+            ) : (
+              <div className="relative">
+                <div className="space-y-3 max-h-48 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+                  {studentTransactions
+                    .slice()
+                    .reverse()
+                    .slice(0, 10) // Show only last 10 transactions
+                    .map((transaction, index) => (
+                      <div key={index} className="p-4 border border-base-300 bg-base-100 rounded-lg hover:bg-base-200">
+                        <div className="flex justify-between items-start mb-2">
+                          <div className="flex-1">
+                            <div className="font-semibold text-base-content flex items-center">
+                              💳 Payment to Merchant
+                              <span className="ml-2 px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">
+                                Completed
+                              </span>
+                            </div>
+                            <div className="text-xs text-base-content opacity-50 font-mono mt-1">
+                              To: {transaction.merchant.slice(0, 6)}...{transaction.merchant.slice(-4)}
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <div className="font-bold text-red-600 text-lg">
+                              -{parseFloat(formatUnits(transaction.amount, 18)).toFixed(4)} LIQUID
+                            </div>
+                            <div className="text-xs text-base-content opacity-50">
+                              {new Date(Number(transaction.timestamp) * 1000).toLocaleDateString()} {" "}
+                              {new Date(Number(transaction.timestamp) * 1000).toLocaleTimeString([], {
+                                hour: '2-digit',
+                                minute: '2-digit'
+                              })}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                </div>
+                
+                {/* Scroll indicator */}
+                {studentTransactions && studentTransactions.length > 2 && (
+                  <div className="absolute bottom-0 left-0 right-0 h-6 bg-gradient-to-t from-base-100 to-transparent pointer-events-none flex items-end justify-center">
+                    <div className="text-xs text-base-content opacity-40 mb-1">↓ Scroll for more ↓</div>
+                  </div>
+                )}
+                
+                {studentTransactions && studentTransactions.length > 10 && (
+                  <div className="text-center py-2 text-base-content opacity-70 text-sm border-t border-base-300 mt-2">
+                    Showing last 10 transactions of {studentTransactions.length} total
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Quick Actions */}
+          <div className="pt-4 border-t border-base-300 space-y-2">
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                onClick={() => {
+                  refetchTransactions();
+                  setRefreshBalance(prev => prev + 1);
+                  refetchBalance();
+                  toast.success("Data refreshed!");
+                }}
+                className="bg-primary text-primary-content py-2 px-4 rounded-md hover:bg-primary-focus text-sm"
+              >
+                🔄 Refresh
+              </button>
+              <button
+                onClick={() => {
+                  if (studentTransactions && studentTransactions.length > 0) {
+                    const csvContent = "data:text/csv;charset=utf-8," + 
+                      "Date,Time,Merchant,Amount (LIQUID)\n" +
+                      studentTransactions.map(tx => {
+                        const date = new Date(Number(tx.timestamp) * 1000);
+                        return `${date.toLocaleDateString()},${date.toLocaleTimeString()},${tx.merchant},${parseFloat(formatUnits(tx.amount, 18)).toFixed(4)}`;
+                      }).join("\n");
+                    
+                    const encodedUri = encodeURI(csvContent);
+                    const link = document.createElement("a");
+                    link.setAttribute("href", encodedUri);
+                    link.setAttribute("download", `liquid-transactions-${new Date().toISOString().split('T')[0]}.csv`);
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    toast.success("Transaction history exported!");
+                  } else {
+                    toast.error("No transactions to export");
+                  }
+                }}
+                className="bg-base-300 text-base-content py-2 px-4 rounded-md hover:bg-base-200 text-sm"
+              >
+                📄 Export
+              </button>
+            </div>
+            <button
+              onClick={() => setStep("scan")}
+              className="w-full bg-success text-success-content py-3 px-4 rounded-md hover:bg-success-focus font-semibold"
+            >
+              💳 Make New Payment
+            </button>
+          </div>
         </div>
       )}
     </div>

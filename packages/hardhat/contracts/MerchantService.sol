@@ -8,22 +8,15 @@ import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
 /**
  * @title MerchantService
- * @dev A smart contract for handling micro-payments with automatic loyalty rewards
+ * @dev A smart contract for handling micro-payments between students and merchants
  * @author LiquidQuick Team
  */
 contract MerchantService is Ownable, ReentrancyGuard {
     // The Liquid Token contract address from SoonPay
     IERC20 public immutable liquidToken;
 
-    // Loyalty reward percentage (5% = 500 basis points)
-    uint256 public constant LOYALTY_RATE = 500; // 5%
-    uint256 public constant BASIS_POINTS = 10000; // 100%
-
     // Minimum payment amount (to prevent spam)
     uint256 public constant MIN_PAYMENT = 1e18; // 1 LIQUID token
-
-    // Contract's loyalty pool balance
-    uint256 public loyaltyPool;
 
     // Merchant registration
     struct Merchant {
@@ -39,7 +32,6 @@ contract MerchantService is Ownable, ReentrancyGuard {
         address student;
         address merchant;
         uint256 amount;
-        uint256 loyaltyReward;
         uint256 timestamp;
     }
 
@@ -55,10 +47,8 @@ contract MerchantService is Ownable, ReentrancyGuard {
         address indexed student,
         address indexed merchant,
         uint256 amount,
-        uint256 loyaltyReward,
         uint256 timestamp
     );
-    event LoyaltyPoolFunded(uint256 amount);
 
     /**
      * @dev Constructor sets the Liquid token address
@@ -91,7 +81,7 @@ contract MerchantService is Ownable, ReentrancyGuard {
     }
 
     /**
-     * @dev Process payment from student to merchant with automatic loyalty reward
+     * @dev Process payment from student to merchant
      * @param _merchant The merchant's wallet address
      * @param _amount The payment amount in LIQUID tokens
      */
@@ -108,24 +98,9 @@ contract MerchantService is Ownable, ReentrancyGuard {
         // Check allowance
         require(liquidToken.allowance(msg.sender, address(this)) >= _amount, "Insufficient allowance");
 
-        // Calculate loyalty reward (5% of payment)
-        uint256 loyaltyReward = (_amount * LOYALTY_RATE) / BASIS_POINTS;
-
-        // Ensure contract has enough loyalty pool for reward
-        require(loyaltyPool >= loyaltyReward, "Insufficient loyalty pool");
-
         // Transfer payment from student to merchant
         bool paymentSuccess = liquidToken.transferFrom(msg.sender, _merchant, _amount);
         require(paymentSuccess, "Payment transfer failed");
-
-        // Transfer loyalty reward from contract to student
-        if (loyaltyReward > 0) {
-            bool rewardSuccess = liquidToken.transfer(msg.sender, loyaltyReward);
-            require(rewardSuccess, "Loyalty reward transfer failed");
-
-            // Deduct from loyalty pool
-            loyaltyPool -= loyaltyReward;
-        }
 
         // Update merchant stats
         merchants[_merchant].totalSales += _amount;
@@ -136,29 +111,13 @@ contract MerchantService is Ownable, ReentrancyGuard {
             student: msg.sender,
             merchant: _merchant,
             amount: _amount,
-            loyaltyReward: loyaltyReward,
             timestamp: block.timestamp
         });
 
         merchantTransactions[_merchant].push(newTransaction);
         studentTransactions[msg.sender].push(newTransaction);
 
-        emit PaymentProcessed(msg.sender, _merchant, _amount, loyaltyReward, block.timestamp);
-    }
-
-    /**
-     * @dev Fund the loyalty pool (only owner can do this)
-     * @param _amount Amount of LIQUID tokens to add to loyalty pool
-     */
-    function fundLoyaltyPool(uint256 _amount) external onlyOwner {
-        require(_amount > 0, "Amount must be greater than 0");
-
-        bool success = liquidToken.transferFrom(msg.sender, address(this), _amount);
-        require(success, "Transfer failed");
-
-        loyaltyPool += _amount;
-
-        emit LoyaltyPoolFunded(_amount);
+        emit PaymentProcessed(msg.sender, _merchant, _amount, block.timestamp);
     }
 
     /**
@@ -195,18 +154,5 @@ contract MerchantService is Ownable, ReentrancyGuard {
     function toggleMerchantStatus(address _merchant) external onlyOwner {
         require(isMerchant[_merchant], "Not a registered merchant");
         merchants[_merchant].isActive = !merchants[_merchant].isActive;
-    }
-
-    /**
-     * @dev Emergency withdraw (only owner)
-     */
-    function emergencyWithdraw() external onlyOwner {
-        uint256 balance = liquidToken.balanceOf(address(this));
-        require(balance > 0, "No balance to withdraw");
-
-        bool success = liquidToken.transfer(owner(), balance);
-        require(success, "Withdrawal failed");
-
-        loyaltyPool = 0;
     }
 }

@@ -49,9 +49,7 @@ const deployMerchantService: DeployFunction = async function (hre: HardhatRuntim
 
   // Log some initial information
   console.log("📊 Contract Info:");
-  console.log("   - Loyalty Rate:", await merchantService.LOYALTY_RATE(), "basis points (5%)");
   console.log("   - Minimum Payment:", await merchantService.MIN_PAYMENT(), "wei");
-  console.log("   - Current Loyalty Pool:", await merchantService.loyaltyPool());
 };
 
 export default deployMerchantService;

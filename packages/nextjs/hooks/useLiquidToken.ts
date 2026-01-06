@@ -32,6 +32,16 @@ const LIQUID_ABI = [
     type: "function",
   },
   {
+    inputs: [
+      { name: "owner", type: "address" },
+      { name: "spender", type: "address" },
+    ],
+    name: "allowance",
+    outputs: [{ type: "uint256" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
     inputs: [],
     name: "decimals",
     outputs: [{ type: "uint8" }],
@@ -58,7 +68,7 @@ const LIQUID_ABI = [
  * Custom hook to interact with the LIQUID token
  * Uses MockLiquidToken for local development, real LIQUID token for production
  */
-export const useLiquidToken = (address?: `0x${string}`) => {
+export const useLiquidToken = (address?: `0x${string}`, refreshKey?: number) => {
   const { targetNetwork } = useTargetNetwork();
   
   // Get the correct LIQUID token address based on network
@@ -74,13 +84,14 @@ export const useLiquidToken = (address?: `0x${string}`) => {
   const LIQUID_ADDRESS = getLiquidAddress();
 
   // Get LIQUID token balance
-  const { data: balance, isLoading: balanceLoading } = useReadContract({
+  const { data: balance, isLoading: balanceLoading, refetch: refetchBalance } = useReadContract({
     address: LIQUID_ADDRESS,
     abi: LIQUID_ABI,
     functionName: "balanceOf",
     args: address ? [address] : undefined,
     query: {
       enabled: !!address,
+      refetchInterval: 5000, // Refetch every 5 seconds
     },
   });
 
@@ -126,5 +137,8 @@ export const useLiquidToken = (address?: `0x${string}`) => {
     // Contract info
     contractAddress: LIQUID_ADDRESS,
     abi: LIQUID_ABI,
+    
+    // Refresh function
+    refetchBalance,
   };
 };

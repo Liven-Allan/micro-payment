@@ -7,7 +7,7 @@ import { GenericContractsDeclaration } from "~~/utils/scaffold-eth/contract";
 const deployedContracts = {
   31337: {
     MerchantService: {
-      address: "0x2279B7A0a67DB372996a5FaB50D91eAA73d2eBe6",
+      address: "0x5FC8d32690cc91D4c39d9d3abcBD16989F875707",
       abi: [
         {
           inputs: [
@@ -46,19 +46,6 @@ const deployedContracts = {
           inputs: [],
           name: "ReentrancyGuardReentrantCall",
           type: "error",
-        },
-        {
-          anonymous: false,
-          inputs: [
-            {
-              indexed: false,
-              internalType: "uint256",
-              name: "amount",
-              type: "uint256",
-            },
-          ],
-          name: "LoyaltyPoolFunded",
-          type: "event",
         },
         {
           anonymous: false,
@@ -122,44 +109,12 @@ const deployedContracts = {
             {
               indexed: false,
               internalType: "uint256",
-              name: "loyaltyReward",
-              type: "uint256",
-            },
-            {
-              indexed: false,
-              internalType: "uint256",
               name: "timestamp",
               type: "uint256",
             },
           ],
           name: "PaymentProcessed",
           type: "event",
-        },
-        {
-          inputs: [],
-          name: "BASIS_POINTS",
-          outputs: [
-            {
-              internalType: "uint256",
-              name: "",
-              type: "uint256",
-            },
-          ],
-          stateMutability: "view",
-          type: "function",
-        },
-        {
-          inputs: [],
-          name: "LOYALTY_RATE",
-          outputs: [
-            {
-              internalType: "uint256",
-              name: "",
-              type: "uint256",
-            },
-          ],
-          stateMutability: "view",
-          type: "function",
         },
         {
           inputs: [],
@@ -172,26 +127,6 @@ const deployedContracts = {
             },
           ],
           stateMutability: "view",
-          type: "function",
-        },
-        {
-          inputs: [],
-          name: "emergencyWithdraw",
-          outputs: [],
-          stateMutability: "nonpayable",
-          type: "function",
-        },
-        {
-          inputs: [
-            {
-              internalType: "uint256",
-              name: "_amount",
-              type: "uint256",
-            },
-          ],
-          name: "fundLoyaltyPool",
-          outputs: [],
-          stateMutability: "nonpayable",
           type: "function",
         },
         {
@@ -257,11 +192,6 @@ const deployedContracts = {
                 },
                 {
                   internalType: "uint256",
-                  name: "loyaltyReward",
-                  type: "uint256",
-                },
-                {
-                  internalType: "uint256",
                   name: "timestamp",
                   type: "uint256",
                 },
@@ -299,11 +229,6 @@ const deployedContracts = {
                 {
                   internalType: "uint256",
                   name: "amount",
-                  type: "uint256",
-                },
-                {
-                  internalType: "uint256",
-                  name: "loyaltyReward",
                   type: "uint256",
                 },
                 {
@@ -353,19 +278,6 @@ const deployedContracts = {
           type: "function",
         },
         {
-          inputs: [],
-          name: "loyaltyPool",
-          outputs: [
-            {
-              internalType: "uint256",
-              name: "",
-              type: "uint256",
-            },
-          ],
-          stateMutability: "view",
-          type: "function",
-        },
-        {
           inputs: [
             {
               internalType: "address",
@@ -393,11 +305,6 @@ const deployedContracts = {
             {
               internalType: "uint256",
               name: "amount",
-              type: "uint256",
-            },
-            {
-              internalType: "uint256",
-              name: "loyaltyReward",
               type: "uint256",
             },
             {
@@ -531,11 +438,6 @@ const deployedContracts = {
             },
             {
               internalType: "uint256",
-              name: "loyaltyReward",
-              type: "uint256",
-            },
-            {
-              internalType: "uint256",
               name: "timestamp",
               type: "uint256",
             },
@@ -575,10 +477,10 @@ const deployedContracts = {
         renounceOwnership: "@openzeppelin/contracts/access/Ownable.sol",
         transferOwnership: "@openzeppelin/contracts/access/Ownable.sol",
       },
-      deployedOnBlock: 13,
+      deployedOnBlock: 8,
     },
     MockLiquidToken: {
-      address: "0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9",
+      address: "0x5FbDB2315678afecb367f032d93F642f64180aa3",
       abi: [
         {
           inputs: [],
@@ -1007,10 +909,10 @@ const deployedContracts = {
         renounceOwnership: "@openzeppelin/contracts/access/Ownable.sol",
         transferOwnership: "@openzeppelin/contracts/access/Ownable.sol",
       },
-      deployedOnBlock: 6,
+      deployedOnBlock: 1,
     },
     YourContract: {
-      address: "0xa513E6E4b8f2a923D98304ec87F64353C4D5C853",
+      address: "0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9",
       abi: [
         {
           inputs: [
@@ -1151,7 +1053,7 @@ const deployedContracts = {
         },
       ],
       inheritedFunctions: {},
-      deployedOnBlock: 11,
+      deployedOnBlock: 6,
     },
   },
 } as const;
