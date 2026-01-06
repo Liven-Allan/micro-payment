@@ -1,11 +1,10 @@
 "use client";
 
 import React, { useRef } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { hardhat } from "viem/chains";
-import { Bars3Icon, BugAntIcon } from "@heroicons/react/24/outline";
+import { Bars3Icon } from "@heroicons/react/24/outline";
 import { FaucetButton, RainbowKitCustomConnectButton } from "~~/components/scaffold-eth";
 import { useOutsideClick, useTargetNetwork } from "~~/hooks/scaffold-eth";
 
@@ -27,11 +26,6 @@ export const menuLinks: HeaderMenuLink[] = [
   {
     label: "Student Wallet",
     href: "/student",
-  },
-  {
-    label: "Debug Contracts",
-    href: "/debug",
-    icon: <BugAntIcon className="h-4 w-4" />,
   },
 ];
 
@@ -86,16 +80,31 @@ export const Header = () => {
               burgerMenuRef?.current?.removeAttribute("open");
             }}
           >
+            {/* Mobile Logo */}
+            <li className="mb-2">
+              <Link href="/" className="flex items-center gap-2 p-2">
+                <div className="bg-primary text-primary-content w-8 h-8 rounded-lg flex items-center justify-center">
+                  <span className="font-bold">M</span>
+                </div>
+                <div>
+                  <div className="font-bold text-sm">Micro Payments</div>
+                  <div className="text-xs opacity-60">Blockchain payments</div>
+                </div>
+              </Link>
+            </li>
+            <div className="divider my-1"></div>
             <HeaderMenuLinks />
           </ul>
         </details>
         <Link href="/" passHref className="hidden lg:flex items-center gap-2 ml-4 mr-6 shrink-0">
           <div className="flex relative w-10 h-10">
-            <Image alt="SE2 logo" className="cursor-pointer" fill src="/logo.svg" />
+            <div className="bg-primary text-primary-content w-10 h-10 rounded-lg flex items-center justify-center">
+              <span className="font-bold text-lg">M</span>
+            </div>
           </div>
           <div className="flex flex-col">
-            <span className="font-bold leading-tight">Scaffold-ETH</span>
-            <span className="text-xs">Ethereum dev stack</span>
+            <span className="font-bold leading-tight">Micro Payments</span>
+            <span className="text-xs">Blockchain payment system</span>
           </div>
         </Link>
         <ul className="hidden lg:flex lg:flex-nowrap menu menu-horizontal px-1 gap-2">
