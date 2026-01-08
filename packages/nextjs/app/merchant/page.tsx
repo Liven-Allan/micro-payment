@@ -5,7 +5,6 @@ import { Address } from "@scaffold-ui/components";
 import { QRCodeSVG } from "qrcode.react";
 import { formatEther } from "viem";
 import { useAccount } from "wagmi";
-import { toast } from "react-hot-toast";
 import { useScaffoldReadContract, useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
 
 /**
@@ -46,7 +45,11 @@ const MerchantHub = () => {
   });
 
   // Get merchant's transaction history
-  const { data: transactions, error: transactionsError, refetch: refetchTransactions } = useScaffoldReadContract({
+  const {
+    data: transactions,
+    error: transactionsError,
+    refetch: refetchTransactions,
+  } = useScaffoldReadContract({
     contractName: "MerchantService",
     functionName: "getMerchantTransactions",
     args: [connectedAddress],
@@ -351,9 +354,9 @@ const MerchantHub = () => {
         <div className="bg-base-100 rounded-lg shadow-md p-6">
           <h2 className="text-xl font-semibold mb-4 text-base-content">Sales Dashboard</h2>
 
-          {/* Today's Sales */}
+          {/* Today&apos;s Sales */}
           <div className="mb-4">
-            <h3 className="text-lg font-semibold text-base-content mb-3">Today's Performance</h3>
+            <h3 className="text-lg font-semibold text-base-content mb-3">Today&apos;s Performance</h3>
             <div className="grid grid-cols-2 gap-4">
               <div className="bg-success bg-opacity-20 p-4 rounded-lg text-center border border-success border-opacity-30">
                 <div className="text-2xl font-bold text-green-600">{todaysSales.count}</div>
@@ -388,7 +391,7 @@ const MerchantHub = () => {
             <h3 className="font-semibold mb-2 text-base-content">Business Information</h3>
             <div className="space-y-2 text-sm">
               <div>
-                <span className="font-medium text-base-content">Business Name:</span> 
+                <span className="font-medium text-base-content">Business Name:</span>
                 <span className="text-base-content opacity-80"> {merchantInfo?.[0] || "N/A"}</span>
               </div>
               <div>
@@ -435,10 +438,10 @@ const MerchantHub = () => {
                             From: <Address address={tx.student} size="sm" />
                           </div>
                           <div className="text-xs text-base-content opacity-50 mt-1">
-                            {new Date(Number(tx.timestamp) * 1000).toLocaleDateString()} {" "}
+                            {new Date(Number(tx.timestamp) * 1000).toLocaleDateString()}{" "}
                             {new Date(Number(tx.timestamp) * 1000).toLocaleTimeString([], {
-                              hour: '2-digit',
-                              minute: '2-digit'
+                              hour: "2-digit",
+                              minute: "2-digit",
                             })}
                           </div>
                         </div>
@@ -452,14 +455,14 @@ const MerchantHub = () => {
                   );
                 })}
             </div>
-            
+
             {/* Scroll indicator */}
             {transactions && transactions.length > 3 && (
               <div className="absolute bottom-0 left-0 right-0 h-6 bg-gradient-to-t from-base-100 to-transparent pointer-events-none flex items-end justify-center">
                 <div className="text-xs text-base-content opacity-40 mb-1">↓ Scroll for more ↓</div>
               </div>
             )}
-            
+
             {transactions.length > 10 && (
               <div className="text-center py-2 text-base-content opacity-70 text-sm border-t border-base-300 mt-2">
                 Showing last 10 transactions of {transactions.length} total

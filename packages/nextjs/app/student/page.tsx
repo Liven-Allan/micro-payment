@@ -2,13 +2,14 @@
 
 import { useState } from "react";
 import { toast } from "react-hot-toast";
-import { parseEther, formatUnits } from "viem";
+import { formatUnits, parseEther } from "viem";
 import { useAccount, useWriteContract } from "wagmi";
+import { CurrencyInput } from "~~/components/CurrencyInput";
 import { LiquidBalance } from "~~/components/LiquidBalance";
 import { QRScanner } from "~~/components/QRScanner";
+import deployedContracts from "~~/contracts/deployedContracts";
 import { useScaffoldReadContract, useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
 import { useLiquidToken } from "~~/hooks/useLiquidToken";
-import deployedContracts from "~~/contracts/deployedContracts";
 
 /**
  * Student Payment Interface - The "Scan & Pay" Experience
@@ -23,7 +24,8 @@ const StudentWallet = () => {
   // State management
   const [scannerActive, setScannerActive] = useState(false);
   const [merchantAddress, setMerchantAddress] = useState<string>("");
-  const [paymentAmount, setPaymentAmount] = useState<string>("");
+  const [paymentAmount, setPaymentAmount] = useState<string>(""); // LIQUID amount
+  const [ugxAmount, setUgxAmount] = useState<string>(""); // UGX amount
   const [isProcessing, setIsProcessing] = useState(false);
   const [step, setStep] = useState<"scan" | "amount" | "confirm" | "processing" | "dashboard">("scan");
   const [refreshBalance, setRefreshBalance] = useState(0);
@@ -49,6 +51,11 @@ const StudentWallet = () => {
     functionName: "isMerchant",
     args: merchantAddress ? [merchantAddress as `0x${string}`] : ["0x0000000000000000000000000000000000000000"],
   });
+
+  // Debug logging
+  console.log("Debug - Merchant Address:", merchantAddress);
+  console.log("Debug - Is Merchant:", isMerchant);
+  console.log("Debug - Merchant Info:", merchantInfo);
 
   // Get student transaction history
   const { data: studentTransactions, refetch: refetchTransactions } = useScaffoldReadContract({
@@ -85,11 +92,6 @@ const StudentWallet = () => {
     setScannerActive(false);
   };
 
-  // Calculate loyalty reward (removed - no more rewards)
-  const calculateLoyaltyReward = (amount: string) => {
-    return "0";
-  };
-
   // Process payment
   const handlePayment = async () => {
     if (!connectedAddress || !merchantAddress || !paymentAmount) {
@@ -117,7 +119,8 @@ const StudentWallet = () => {
       toast.loading("Step 1/2: Approving LIQUID tokens...", { id: "payment-process" });
 
       // Get the correct MerchantService address from deployed contracts
-      const merchantServiceAddress = deployedContracts[31337]?.MerchantService?.address || "0xA51c1fc2f0D1a1b8494Ed1FE312d7C3a78Ed91C0";
+      const merchantServiceAddress =
+        deployedContracts[31337]?.MerchantService?.address || "0xA51c1fc2f0D1a1b8494Ed1FE312d7C3a78Ed91C0";
 
       console.log("=== PAYMENT DEBUG INFO ===");
       console.log("Student address:", connectedAddress);
@@ -153,10 +156,13 @@ const StudentWallet = () => {
       console.log("Payment transaction:", paymentResult);
 
       // Success!
-      toast.success(`Payment successful! ${paymentAmount} LIQUID sent to merchant.`, {
-        id: "payment-process",
-        duration: 5000,
-      });
+      toast.success(
+        `Payment successful! ${ugxAmount ? `${parseFloat(ugxAmount).toLocaleString()} UGX` : paymentAmount} LIQUID sent to merchant.`,
+        {
+          id: "payment-process",
+          duration: 5000,
+        },
+      );
 
       // Show success modal
       showSuccessModal(paymentAmount);
@@ -187,13 +193,14 @@ const StudentWallet = () => {
   };
 
   // Show success modal
-  const showSuccessModal = (amount: string) => {
+  const showSuccessModal = (liquidAmount: string) => {
     // Create a custom success notification
     const successMessage = (
       <div className="text-center">
         <div className="text-lg font-bold text-green-600 mb-2">🎉 Payment Successful!</div>
-        <div className="text-sm">
-          <div>Paid: {amount} LIQUID</div>
+        <div className="text-sm space-y-1">
+          <div>Paid: {ugxAmount ? `${parseFloat(ugxAmount).toLocaleString()} UGX` : "0 UGX"}</div>
+          <div className="text-gray-600">≈ {liquidAmount} LIQUID</div>
         </div>
       </div>
     );
@@ -201,10 +208,17 @@ const StudentWallet = () => {
     toast.success(successMessage as any, { duration: 6000 });
   };
 
+  // Handle currency amount changes
+  const handleCurrencyAmountChange = (liquidAmount: string, ugxAmount: string) => {
+    setPaymentAmount(liquidAmount);
+    setUgxAmount(ugxAmount);
+  };
+
   // Reset form to initial state
   const resetForm = () => {
     setMerchantAddress("");
     setPaymentAmount("");
+    setUgxAmount("");
     setStep("scan");
   };
 
@@ -230,11 +244,7 @@ const StudentWallet = () => {
 
         {/* Balance Display */}
         <div className="mt-4 p-4 bg-base-200 rounded-lg">
-          <LiquidBalance 
-            address={connectedAddress as `0x${string}`} 
-            className="text-lg" 
-            key={refreshBalance} 
-          />
+          <LiquidBalance address={connectedAddress as `0x${string}`} className="text-lg" key={refreshBalance} />
         </div>
 
         {/* Navigation Buttons */}
@@ -271,7 +281,12 @@ const StudentWallet = () => {
             <div className="text-center">
               <div className="mb-4">
                 <div className="w-32 h-32 mx-auto bg-base-200 rounded-lg flex items-center justify-center mb-4">
-                  <svg className="w-16 h-16 text-base-content opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg
+                    className="w-16 h-16 text-base-content opacity-60"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -348,31 +363,10 @@ const StudentWallet = () => {
             )}
           </div>
 
-          {/* Amount Input */}
+          {/* Currency Input */}
           <div className="mb-6">
-            <label className="block text-sm font-medium text-base-content mb-2">Amount (LIQUID)</label>
-            <input
-              type="number"
-              step="0.0001"
-              min="0"
-              value={paymentAmount}
-              onChange={e => setPaymentAmount(e.target.value)}
-              placeholder="0.0000"
-              className="w-full px-4 py-3 border border-base-300 bg-base-100 text-base-content rounded-md text-lg text-center font-mono focus:outline-none focus:ring-2 focus:ring-primary"
-            />
-
-            {/* Quick amount buttons */}
-            <div className="grid grid-cols-3 gap-2 mt-3">
-              {["1", "5", "10"].map(amount => (
-                <button
-                  key={amount}
-                  onClick={() => setPaymentAmount(amount)}
-                  className="py-2 px-3 bg-base-200 hover:bg-base-300 text-base-content rounded-md text-sm"
-                >
-                  {amount} LIQUID
-                </button>
-              ))}
-            </div>
+            <label className="block text-sm font-medium text-base-content mb-3">Payment Amount</label>
+            <CurrencyInput onAmountChange={handleCurrencyAmountChange} disabled={isProcessing} className="w-full" />
           </div>
 
           {/* Action Buttons */}
@@ -408,20 +402,20 @@ const StudentWallet = () => {
               <div className="text-xs text-gray-500 font-mono">{merchantAddress}</div>
             </div>
 
-            <div className="p-4 bg-blue-50 rounded-lg">
+            <div className="p-4 bg-blue-50 rounded-lg space-y-2">
               <div className="text-sm text-blue-800">Payment Amount</div>
-              <div className="text-2xl font-bold text-blue-900">{paymentAmount} LIQUID</div>
+              <div className="text-xl font-bold text-blue-900">
+                {ugxAmount ? `${parseFloat(ugxAmount).toLocaleString()} UGX` : "0 UGX"}
+              </div>
+              <div className="text-lg font-semibold text-blue-700">≈ {paymentAmount} LIQUID</div>
             </div>
-
           </div>
 
           {/* Balance Check */}
           <div className="mb-6 p-3 bg-yellow-50 rounded-lg">
             <div className="text-sm">
               <div>Your Balance: {parseFloat(formattedBalance).toFixed(4)} LIQUID</div>
-              <div>
-                After Payment: {(parseFloat(formattedBalance) - parseFloat(paymentAmount)).toFixed(4)} LIQUID
-              </div>
+              <div>After Payment: {(parseFloat(formattedBalance) - parseFloat(paymentAmount)).toFixed(4)} LIQUID</div>
             </div>
           </div>
 
@@ -465,25 +459,23 @@ const StudentWallet = () => {
           <div className="mb-6 p-4 bg-gradient-to-r from-primary from-opacity-10 to-success to-opacity-10 rounded-lg border border-primary border-opacity-20">
             <div className="text-center">
               <div className="text-sm text-base-content opacity-70 mb-1">Current Balance</div>
-              <div className="text-3xl font-bold text-green-600">
-                {parseFloat(formattedBalance).toFixed(4)} LIQUID
-              </div>
+              <div className="text-3xl font-bold text-green-600">{parseFloat(formattedBalance).toFixed(4)} LIQUID</div>
             </div>
           </div>
 
           {/* Summary Stats */}
           <div className="grid grid-cols-2 gap-4 mb-6">
             <div className="p-4 bg-info bg-opacity-20 rounded-lg text-center border border-info border-opacity-30">
-              <div className="text-2xl font-bold text-blue-600">
-                {studentTransactions?.length || 0}
-              </div>
+              <div className="text-2xl font-bold text-blue-600">{studentTransactions?.length || 0}</div>
               <div className="text-sm text-blue-800">Total Payments</div>
             </div>
             <div className="p-4 bg-error bg-opacity-20 rounded-lg text-center border border-error border-opacity-30">
               <div className="text-2xl font-bold text-red-600">
-                {studentTransactions?.reduce((total, tx) => {
-                  return total + parseFloat(formatUnits(tx.amount, 18));
-                }, 0).toFixed(2) || "0.00"}
+                {studentTransactions
+                  ?.reduce((total, tx) => {
+                    return total + parseFloat(formatUnits(tx.amount, 18));
+                  }, 0)
+                  .toFixed(2) || "0.00"}
               </div>
               <div className="text-sm text-red-800">Total Spent (LIQUID)</div>
             </div>
@@ -497,13 +489,18 @@ const StudentWallet = () => {
                 <div>
                   <span className="text-base-content opacity-60">Largest Payment:</span>
                   <div className="font-semibold text-gray-900">
-                    {Math.max(...studentTransactions.map(tx => parseFloat(formatUnits(tx.amount, 18)))).toFixed(4)} LIQUID
+                    {Math.max(...studentTransactions.map(tx => parseFloat(formatUnits(tx.amount, 18)))).toFixed(4)}{" "}
+                    LIQUID
                   </div>
                 </div>
                 <div>
                   <span className="text-base-content opacity-60">Average Payment:</span>
                   <div className="font-semibold text-gray-900">
-                    {(studentTransactions.reduce((total, tx) => total + parseFloat(formatUnits(tx.amount, 18)), 0) / studentTransactions.length).toFixed(4)} LIQUID
+                    {(
+                      studentTransactions.reduce((total, tx) => total + parseFloat(formatUnits(tx.amount, 18)), 0) /
+                      studentTransactions.length
+                    ).toFixed(4)}{" "}
+                    LIQUID
                   </div>
                 </div>
               </div>
@@ -513,7 +510,7 @@ const StudentWallet = () => {
           {/* Transaction History */}
           <div className="mb-4">
             <h3 className="text-lg font-semibold mb-3 text-base-content">Recent Transactions</h3>
-            
+
             {!studentTransactions || studentTransactions.length === 0 ? (
               <div className="text-center py-8 text-base-content opacity-60">
                 <div className="text-4xl mb-2">💳</div>
@@ -546,10 +543,10 @@ const StudentWallet = () => {
                               -{parseFloat(formatUnits(transaction.amount, 18)).toFixed(4)} LIQUID
                             </div>
                             <div className="text-xs text-base-content opacity-50">
-                              {new Date(Number(transaction.timestamp) * 1000).toLocaleDateString()} {" "}
+                              {new Date(Number(transaction.timestamp) * 1000).toLocaleDateString()}{" "}
                               {new Date(Number(transaction.timestamp) * 1000).toLocaleTimeString([], {
-                                hour: '2-digit',
-                                minute: '2-digit'
+                                hour: "2-digit",
+                                minute: "2-digit",
                               })}
                             </div>
                           </div>
@@ -557,14 +554,14 @@ const StudentWallet = () => {
                       </div>
                     ))}
                 </div>
-                
+
                 {/* Scroll indicator */}
                 {studentTransactions && studentTransactions.length > 2 && (
                   <div className="absolute bottom-0 left-0 right-0 h-6 bg-gradient-to-t from-base-100 to-transparent pointer-events-none flex items-end justify-center">
                     <div className="text-xs text-base-content opacity-40 mb-1">↓ Scroll for more ↓</div>
                   </div>
                 )}
-                
+
                 {studentTransactions && studentTransactions.length > 10 && (
                   <div className="text-center py-2 text-base-content opacity-70 text-sm border-t border-base-300 mt-2">
                     Showing last 10 transactions of {studentTransactions.length} total
@@ -591,17 +588,20 @@ const StudentWallet = () => {
               <button
                 onClick={() => {
                   if (studentTransactions && studentTransactions.length > 0) {
-                    const csvContent = "data:text/csv;charset=utf-8," + 
+                    const csvContent =
+                      "data:text/csv;charset=utf-8," +
                       "Date,Time,Merchant,Amount (LIQUID)\n" +
-                      studentTransactions.map(tx => {
-                        const date = new Date(Number(tx.timestamp) * 1000);
-                        return `${date.toLocaleDateString()},${date.toLocaleTimeString()},${tx.merchant},${parseFloat(formatUnits(tx.amount, 18)).toFixed(4)}`;
-                      }).join("\n");
-                    
+                      studentTransactions
+                        .map(tx => {
+                          const date = new Date(Number(tx.timestamp) * 1000);
+                          return `${date.toLocaleDateString()},${date.toLocaleTimeString()},${tx.merchant},${parseFloat(formatUnits(tx.amount, 18)).toFixed(4)}`;
+                        })
+                        .join("\n");
+
                     const encodedUri = encodeURI(csvContent);
                     const link = document.createElement("a");
                     link.setAttribute("href", encodedUri);
-                    link.setAttribute("download", `liquid-transactions-${new Date().toISOString().split('T')[0]}.csv`);
+                    link.setAttribute("download", `liquid-transactions-${new Date().toISOString().split("T")[0]}.csv`);
                     document.body.appendChild(link);
                     link.click();
                     document.body.removeChild(link);

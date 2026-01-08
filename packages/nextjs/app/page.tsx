@@ -2,30 +2,24 @@
 
 import Link from "next/link";
 import type { NextPage } from "next";
-import { useAccount } from "wagmi";
-import { 
-  WalletIcon, 
-  QrCodeIcon, 
-  CheckCircleIcon,
-  BuildingStorefrontIcon,
+import {
   AcademicCapIcon,
+  BuildingStorefrontIcon,
   ChartBarIcon,
-  ClockIcon,
-  ShieldCheckIcon,
   CurrencyDollarIcon,
-  DevicePhoneMobileIcon
+  DevicePhoneMobileIcon,
+  QrCodeIcon,
+  ShieldCheckIcon,
 } from "@heroicons/react/24/outline";
 import {
-  WalletIcon as WalletIconSolid,
-  QrCodeIcon as QrCodeIconSolid,
-  CheckCircleIcon as CheckCircleIconSolid,
+  AcademicCapIcon as AcademicCapIconSolid,
   BuildingStorefrontIcon as BuildingStorefrontIconSolid,
-  AcademicCapIcon as AcademicCapIconSolid
+  CheckCircleIcon as CheckCircleIconSolid,
+  QrCodeIcon as QrCodeIconSolid,
+  WalletIcon as WalletIconSolid,
 } from "@heroicons/react/24/solid";
 
 const Home: NextPage = () => {
-  const { address: connectedAddress } = useAccount();
-
   return (
     <>
       {/* Hero Section */}
@@ -38,25 +32,19 @@ const Home: NextPage = () => {
               <span className="text-primary">Micro Payments</span>
             </h1>
             <p className="text-xl md:text-2xl text-base-content opacity-70 mb-8 max-w-4xl mx-auto">
-              The blockchain-powered payment system connecting students and merchants. 
-              Fast, secure, and transparent transactions.
+              The blockchain-powered payment system connecting students and merchants. Fast, secure, and transparent
+              transactions.
             </p>
-            
+
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-              <Link 
-                href="/merchant" 
-                className="btn btn-primary btn-lg text-lg px-8 py-4 rounded-full"
-              >
+              <Link href="/merchant" className="btn btn-primary btn-lg text-lg px-8 py-4 rounded-full">
                 <BuildingStorefrontIcon className="w-6 h-6 mr-2" />
-                I'm a Merchant
+                I&apos;m a Merchant
               </Link>
-              <Link 
-                href="/student" 
-                className="btn btn-secondary btn-lg text-lg px-8 py-4 rounded-full"
-              >
+              <Link href="/student" className="btn btn-secondary btn-lg text-lg px-8 py-4 rounded-full">
                 <AcademicCapIcon className="w-6 h-6 mr-2" />
-                I'm a Student
+                I&apos;m a Student
               </Link>
             </div>
 
@@ -87,9 +75,7 @@ const Home: NextPage = () => {
               <span className="text-base-content">How It </span>
               <span className="text-primary">Works</span>
             </h2>
-            <p className="text-xl text-base-content opacity-70">
-              Three simple steps to seamless blockchain payments.
-            </p>
+            <p className="text-xl text-base-content opacity-70">Three simple steps to seamless blockchain payments.</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
@@ -142,11 +128,9 @@ const Home: NextPage = () => {
       <div className="bg-base-100 py-20">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold mb-4 text-base-content">
-              Choose Your Path
-            </h2>
+            <h2 className="text-4xl md:text-5xl font-bold mb-4 text-base-content">Choose Your Path</h2>
             <p className="text-xl text-base-content opacity-70">
-              Whether you're accepting payments or making them, we've got you covered.
+              Whether you&apos;re accepting payments or making them, we&apos;ve got you covered.
             </p>
           </div>
 
@@ -159,8 +143,8 @@ const Home: NextPage = () => {
                 </div>
                 <h3 className="text-3xl font-bold text-blue-600 mb-4">For Merchants</h3>
                 <p className="text-base-content opacity-70">
-                  Accept LIQUID payments instantly with your unique QR code. 
-                  Track sales and manage your business effortlessly.
+                  Accept LIQUID payments instantly with your unique QR code. Track sales and manage your business
+                  effortlessly.
                 </p>
               </div>
 
@@ -179,10 +163,7 @@ const Home: NextPage = () => {
                 </div>
               </div>
 
-              <Link 
-                href="/merchant" 
-                className="btn bg-blue-600 hover:bg-blue-700 text-white w-full btn-lg border-0"
-              >
+              <Link href="/merchant" className="btn bg-blue-600 hover:bg-blue-700 text-white w-full btn-lg border-0">
                 Get Started as Merchant
               </Link>
             </div>
@@ -195,8 +176,7 @@ const Home: NextPage = () => {
                 </div>
                 <h3 className="text-3xl font-bold text-green-600 mb-4">For Students</h3>
                 <p className="text-base-content opacity-70">
-                  Scan, pay, and go. Manage your LIQUID balance and 
-                  track your spending all in one place.
+                  Scan, pay, and go. Manage your LIQUID balance and track your spending all in one place.
                 </p>
               </div>
 
@@ -215,10 +195,7 @@ const Home: NextPage = () => {
                 </div>
               </div>
 
-              <Link 
-                href="/student" 
-                className="btn bg-green-600 hover:bg-green-700 text-white w-full btn-lg border-0"
-              >
+              <Link href="/student" className="btn bg-green-600 hover:bg-green-700 text-white w-full btn-lg border-0">
                 Get Started as Student
               </Link>
             </div>
@@ -235,9 +212,7 @@ const Home: NextPage = () => {
             </div>
             <span className="text-xl font-bold text-base-content">Micro Payments</span>
           </div>
-          <p className="text-base-content opacity-60">
-            Built on Ethereum • Powered by blockchain
-          </p>
+          <p className="text-base-content opacity-60">Built on Ethereum • Powered by blockchain</p>
         </div>
       </footer>
     </>
