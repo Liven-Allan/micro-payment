@@ -5,6 +5,7 @@ import { Address } from "@scaffold-ui/components";
 import { QRCodeSVG } from "qrcode.react";
 import { formatEther } from "viem";
 import { useAccount } from "wagmi";
+import { LiquidBalance } from "~~/components/LiquidBalance";
 import { useScaffoldReadContract, useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
 
 /**
@@ -318,9 +319,15 @@ const MerchantHub = () => {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
-        <div className="text-center">
-          <h1 className="text-3xl font-bold">Merchant Dashboard</h1>
-          <p className="text-gray-600">Welcome back, {merchantInfo?.[0] || "Merchant"}!</p>
+        <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="text-center flex-1">
+            <h1 className="text-3xl font-bold">Merchant Dashboard</h1>
+            <p className="text-gray-600">Welcome back, {merchantInfo?.[0] || "Merchant"}!</p>
+          </div>
+          {/* Balance and Earn Yield Button */}
+          <div className="flex items-center bg-gray-50 rounded-lg px-4 py-3">
+            <LiquidBalance address={connectedAddress as `0x${string}`} showLabel={true} />
+          </div>
         </div>
       </div>
 
