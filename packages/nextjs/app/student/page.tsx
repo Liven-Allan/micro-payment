@@ -197,7 +197,7 @@ const StudentWallet = () => {
     // Create a custom success notification
     const successMessage = (
       <div className="text-center">
-        <div className="text-lg font-bold text-green-600 mb-2">🎉 Payment Successful!</div>
+        <div className="text-lg font-bold text-green-600 mb-2">Payment Successful!</div>
         <div className="text-sm space-y-1">
           <div>Paid: {ugxAmount ? `${parseFloat(ugxAmount).toLocaleString()} UGX` : "0 UGX"}</div>
           <div className="text-gray-600">≈ {liquidAmount} LIQUID</div>
@@ -257,7 +257,7 @@ const StudentWallet = () => {
                 : "bg-base-200 text-base-content hover:bg-base-300"
             }`}
           >
-            💳 Pay
+            Pay
           </button>
           <button
             onClick={() => setStep("dashboard")}
@@ -267,7 +267,7 @@ const StudentWallet = () => {
                 : "bg-base-200 text-base-content hover:bg-base-300"
             }`}
           >
-            📊 History
+            History
           </button>
         </div>
       </div>
@@ -299,7 +299,7 @@ const StudentWallet = () => {
                   onClick={() => setScannerActive(true)}
                   className="w-full bg-primary text-primary-content py-3 px-4 rounded-md hover:bg-primary-focus font-semibold mb-4"
                 >
-                  📷 Start Camera Scanner
+                  Start Camera Scanner
                 </button>
               </div>
 
@@ -357,9 +357,9 @@ const StudentWallet = () => {
             <div className="text-xs text-base-content opacity-50 mt-1 font-mono">{merchantAddress}</div>
 
             {isMerchant ? (
-              <div className="text-success text-sm mt-2">✅ Verified Merchant</div>
+              <div className="text-success text-sm mt-2">Verified Merchant</div>
             ) : (
-              <div className="text-error text-sm mt-2">⚠️ Unregistered Address</div>
+              <div className="text-error text-sm mt-2">Unregistered Address</div>
             )}
           </div>
 
@@ -513,7 +513,6 @@ const StudentWallet = () => {
 
             {!studentTransactions || studentTransactions.length === 0 ? (
               <div className="text-center py-8 text-base-content opacity-60">
-                <div className="text-4xl mb-2">💳</div>
                 <div>No transactions yet</div>
                 <div className="text-sm">Make your first payment to see it here!</div>
               </div>
@@ -529,7 +528,7 @@ const StudentWallet = () => {
                         <div className="flex justify-between items-start mb-2">
                           <div className="flex-1">
                             <div className="font-semibold text-base-content flex items-center">
-                              💳 Payment to Merchant
+                              Payment to Merchant
                               <span className="ml-2 px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">
                                 Completed
                               </span>
@@ -583,7 +582,7 @@ const StudentWallet = () => {
                 }}
                 className="bg-primary text-primary-content py-2 px-4 rounded-md hover:bg-primary-focus text-sm"
               >
-                🔄 Refresh
+                Refresh
               </button>
               <button
                 onClick={() => {
@@ -612,14 +611,14 @@ const StudentWallet = () => {
                 }}
                 className="bg-base-300 text-base-content py-2 px-4 rounded-md hover:bg-base-200 text-sm"
               >
-                📄 Export
+                Export
               </button>
             </div>
             <button
               onClick={() => setStep("scan")}
               className="w-full bg-success text-success-content py-3 px-4 rounded-md hover:bg-success-focus font-semibold"
             >
-              💳 Make New Payment
+              Make New Payment
             </button>
           </div>
         </div>

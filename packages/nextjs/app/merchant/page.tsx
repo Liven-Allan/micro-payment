@@ -204,7 +204,7 @@ const MerchantHub = () => {
             Use the &quot;Connect Wallet&quot; button in the top navigation
           </div>
           <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-sm">
-            <p className="font-semibold text-yellow-800 mb-2">⚠️ Network Setup Required</p>
+            <p className="font-semibold text-yellow-800 mb-2">Network Setup Required</p>
             <p className="text-yellow-700">
               Make sure you&apos;re connected to the <strong>Hardhat Local Network</strong>:
             </p>
@@ -227,7 +227,7 @@ const MerchantHub = () => {
         <div className="text-center max-w-md">
           <h1 className="text-3xl font-bold mb-4 text-red-600">Network Error</h1>
           <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-sm mb-4">
-            <p className="font-semibold text-red-800 mb-2">❌ Cannot connect to contracts</p>
+            <p className="font-semibold text-red-800 mb-2">Cannot connect to contracts</p>
             <p className="text-red-700 mb-3">
               You&apos;re connected to the wrong network. Please switch to the Hardhat Local Network.
             </p>
@@ -303,18 +303,6 @@ const MerchantHub = () => {
                 {isRegistering ? "Registering..." : "Register Business"}
               </button>
 
-              {/* Debug button for manual refresh */}
-              <button
-                onClick={async () => {
-                  console.log("Manual refresh triggered");
-                  const result = await refetchMerchantStatus();
-                  console.log("Manual refresh result:", result);
-                }}
-                className="w-full bg-gray-500 text-white py-1 px-4 rounded-md hover:bg-gray-600 text-sm mb-4"
-              >
-                🔄 Refresh Status (Debug)
-              </button>
-
               <div className="mt-4 text-sm text-gray-600">
                 <p>After registration, you&apos;ll be able to:</p>
                 <ul className="list-disc list-inside mt-2">
@@ -376,7 +364,7 @@ const MerchantHub = () => {
 
           <div className="mt-4 p-3 bg-info bg-opacity-20 rounded-lg">
             <p className="text-sm text-base-content">
-              💡 <strong>How it works:</strong> Students scan your QR code, enter the amount, and pay instantly with
+              <strong>How it works:</strong> Students scan your QR code, enter the amount, and pay instantly with
               LIQUID tokens. Simple and secure payments!
             </p>
           </div>
@@ -469,7 +457,7 @@ const MerchantHub = () => {
                       <div className="flex justify-between items-start">
                         <div className="flex-1">
                           <div className="font-semibold text-base-content flex items-center">
-                            💰 Payment Received
+                            Payment Received
                             <span className="ml-2 px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">
                               Completed
                             </span>
@@ -511,7 +499,6 @@ const MerchantHub = () => {
           </div>
         ) : (
           <div className="text-center py-8 text-base-content opacity-60">
-            <div className="text-4xl mb-2">📱</div>
             <p className="font-medium">No transactions yet</p>
             <p className="text-sm mt-2">Share your QR code with students to start receiving payments!</p>
           </div>

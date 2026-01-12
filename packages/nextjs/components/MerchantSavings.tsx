@@ -213,7 +213,7 @@ export const MerchantSavings = ({ connectedAddress, liquidBalance, onBalanceChan
     <div className="mt-8 bg-base-100 rounded-lg shadow-md p-6 border border-base-300">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h2 className="text-2xl font-bold text-success mb-2">💰 Merchant Savings</h2>
+          <h2 className="text-2xl font-bold text-success mb-2">Merchant Savings</h2>
           <p className="text-base-content opacity-70">Earn passive income on your idle LIQUID tokens</p>
         </div>
         <div className="text-right">
@@ -229,7 +229,7 @@ export const MerchantSavings = ({ connectedAddress, liquidBalance, onBalanceChan
             <div className="text-2xl font-bold text-success mb-1">{parseFloat(savingsBalance).toFixed(6)}</div>
             <div className="text-sm text-base-content opacity-80">LIQUID in Savings</div>
             <div className="text-xs text-base-content opacity-60 mt-1">
-              {parseFloat(savingsBalance) > 0 ? "Growing every second! 📈" : "Start earning now! 🚀"}
+              {parseFloat(savingsBalance) > 0 ? "Growing every second" : "Start earning now"}
             </div>
           </div>
         </div>
@@ -240,7 +240,7 @@ export const MerchantSavings = ({ connectedAddress, liquidBalance, onBalanceChan
             <div className="text-2xl font-bold text-info mb-1">{parseFloat(totalEarned).toFixed(6)}</div>
             <div className="text-sm text-base-content opacity-80">Current Interest</div>
             <div className="text-xs text-base-content opacity-60 mt-1">
-              {parseFloat(totalEarned) > 0 ? "Ready to withdraw! 💸" : "Earning interest! 💰"}
+              {parseFloat(totalEarned) > 0 ? "Ready to withdraw" : "Earning interest"}
             </div>
           </div>
         </div>
@@ -251,7 +251,7 @@ export const MerchantSavings = ({ connectedAddress, liquidBalance, onBalanceChan
             <div className="text-2xl font-bold text-purple-600 mb-1">{parseFloat(totalWithdrawnInterest).toFixed(6)}</div>
             <div className="text-sm text-purple-700">Total Withdrawn</div>
             <div className="text-xs text-gray-500 mt-1">
-              {parseFloat(totalWithdrawnInterest) > 0 ? "Profits taken! 🎉" : "No withdrawals yet 📊"}
+              {parseFloat(totalWithdrawnInterest) > 0 ? "Profits taken" : "No withdrawals yet"}
             </div>
           </div>
         </div>
@@ -262,7 +262,7 @@ export const MerchantSavings = ({ connectedAddress, liquidBalance, onBalanceChan
             <div className="text-2xl font-bold text-warning mb-1">{parseFloat(availableBalance).toFixed(4)}</div>
             <div className="text-sm text-base-content opacity-80">Available to Deposit</div>
             <div className="text-xs text-base-content opacity-60 mt-1">
-              {parseFloat(availableBalance) > 0 ? "Ready to earn! 🚀" : "Get more LIQUID! 💳"}
+              {parseFloat(availableBalance) > 0 ? "Ready to earn" : "Get more LIQUID"}
             </div>
           </div>
         </div>
@@ -275,7 +275,7 @@ export const MerchantSavings = ({ connectedAddress, liquidBalance, onBalanceChan
           disabled={parseFloat(availableBalance) <= 0 || isDepositing}
           className="bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium transition-colors text-sm"
         >
-          {isDepositing ? "Depositing..." : "🏦 Deposit to Savings"}
+          {isDepositing ? "Depositing..." : "Deposit to Savings"}
         </button>
 
         <button
@@ -283,7 +283,7 @@ export const MerchantSavings = ({ connectedAddress, liquidBalance, onBalanceChan
           disabled={parseFloat(totalEarned) <= 0 || isWithdrawingInterest}
           className="bg-purple-600 text-white py-2 px-4 rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium transition-colors text-sm"
         >
-          {isWithdrawingInterest ? "Withdrawing..." : "💰 Withdraw Interest"}
+          {isWithdrawingInterest ? "Withdrawing..." : "Withdraw Interest"}
         </button>
 
         <button
@@ -291,13 +291,13 @@ export const MerchantSavings = ({ connectedAddress, liquidBalance, onBalanceChan
           disabled={parseFloat(savingsBalance) <= 0 || isWithdrawing}
           className="bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium transition-colors text-sm"
         >
-          {isWithdrawing ? "Withdrawing..." : "💸 Withdraw All"}
+          {isWithdrawing ? "Withdrawing..." : "Withdraw All"}
         </button>
       </div>
 
       {/* Balance Summary */}
       <div className="bg-base-200 rounded-lg p-4 border border-base-300 mb-4">
-        <h3 className="font-semibold text-base-content mb-3">💼 Balance Summary</h3>
+        <h3 className="font-semibold text-base-content mb-3">Balance Summary</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
           <div className="space-y-2">
             <div className="flex justify-between">
@@ -334,17 +334,17 @@ export const MerchantSavings = ({ connectedAddress, liquidBalance, onBalanceChan
 
       {/* How it Works */}
       <div className="bg-base-200 rounded-lg p-4 border border-base-300">
-        <h3 className="font-semibold text-base-content mb-3">🎯 How Merchant Savings Works</h3>
+        <h3 className="font-semibold text-base-content mb-3">How Merchant Savings Works</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-base-content opacity-80">
           <div className="space-y-2">
             <div className="flex items-start">
-              <span className="text-success mr-2">✅</span>
+              <span className="text-success mr-2">✓</span>
               <span>
                 <strong>Flexible:</strong> Withdraw anytime, no lock-up periods
               </span>
             </div>
             <div className="flex items-start">
-              <span className="text-success mr-2">✅</span>
+              <span className="text-success mr-2">✓</span>
               <span>
                 <strong>Safe:</strong> Your tokens are lent to verified borrowers
               </span>
@@ -352,13 +352,13 @@ export const MerchantSavings = ({ connectedAddress, liquidBalance, onBalanceChan
           </div>
           <div className="space-y-2">
             <div className="flex items-start">
-              <span className="text-info mr-2">💰</span>
+              <span className="text-info mr-2">•</span>
               <span>
                 <strong>Passive Income:</strong> Earn {currentAPY}% APY automatically
               </span>
             </div>
             <div className="flex items-start">
-              <span className="text-info mr-2">⚡</span>
+              <span className="text-info mr-2">•</span>
               <span>
                 <strong>Real-time:</strong> Watch your balance grow every second
               </span>
@@ -391,10 +391,10 @@ export const MerchantSavings = ({ connectedAddress, liquidBalance, onBalanceChan
             <div className="bg-green-50 p-3 rounded-md mb-4">
               <div className="text-sm text-green-800">
                 <div>
-                  💰 Estimated yearly earnings: {((parseFloat(depositAmount || "0") * currentAPY) / 100).toFixed(6)}{" "}
+                  Estimated yearly earnings: {((parseFloat(depositAmount || "0") * currentAPY) / 100).toFixed(6)}{" "}
                   LIQUID
                 </div>
-                <div>⚡ Interest compounds every second</div>
+                <div>Interest compounds every second</div>
                 <div className="mt-2 pt-2 border-t border-green-200">
                   <strong>After deposit:</strong>
                   <div>Available: {(parseFloat(availableBalance) - parseFloat(depositAmount || "0")).toFixed(4)} LIQUID</div>
