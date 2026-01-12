@@ -6,7 +6,9 @@ import { QRCodeSVG } from "qrcode.react";
 import { formatEther } from "viem";
 import { useAccount } from "wagmi";
 import { LiquidBalance } from "~~/components/LiquidBalance";
+import { MerchantSavings } from "~~/components/MerchantSavings";
 import { useScaffoldReadContract, useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
+import { useLiquidToken } from "~~/hooks/useLiquidToken";
 
 /**
  * Merchant Hub - The "Cash Register" Interface
@@ -22,6 +24,26 @@ const MerchantHub = () => {
   const [isRegistering, setIsRegistering] = useState(false);
   const [registrationSuccess, setRegistrationSuccess] = useState(false);
   const [locallyRegistered, setLocallyRegistered] = useState(false);
+
+  // Get LIQUID token balance
+  const { formattedBalance, refetchBalance } = useLiquidToken(connectedAddress as `0x${string}`);
+  
+  // Local balance state for savings interactions (simulated)
+  const [localBalance, setLocalBalance] = useState<string | null>(null);
+  const [withdrawnInterest, setWithdrawnInterest] = useState<string>("0");
+  
+  // Use local balance if available, otherwise use the actual balance
+  const displayBalance = localBalance || formattedBalance;
+
+  // Handle balance changes from savings component
+  const handleBalanceChange = (newBalance: string) => {
+    setLocalBalance(newBalance);
+  };
+
+  // Handle withdrawn interest changes from savings component
+  const handleWithdrawnInterestChange = (newWithdrawnInterest: string) => {
+    setWithdrawnInterest(newWithdrawnInterest);
+  };
 
   // Read merchant information from the smart contract
   const {
@@ -149,19 +171,11 @@ const MerchantHub = () => {
 
   // Debug logging
   useEffect(() => {
-    console.log("=== Debug Info ===");
-    console.log("isMerchant value:", isMerchant);
-    console.log("connectedAddress:", connectedAddress);
-    console.log("merchantInfo:", merchantInfo);
-    console.log("transactions:", transactions);
-    console.log("transactions length:", transactions?.length);
-    console.log("transactions type:", typeof transactions);
-    console.log("transactions is array:", Array.isArray(transactions));
+    console.log("=== Merchant Registration Status ===");
+    console.log("isMerchant:", isMerchant);
     console.log("locallyRegistered:", locallyRegistered);
-    console.log("=== Errors ===");
-    console.log("merchantStatusError:", merchantStatusError);
-    console.log("merchantInfoError:", merchantInfoError);
-    console.log("transactionsError:", transactionsError);
+    console.log("merchantInfo:", merchantInfo);
+    console.log("Should show registration form:", (!isMerchant || isMerchant === undefined) && !locallyRegistered);
 
     // If contract confirms registration, we can clear the local flag
     if (isMerchant && locallyRegistered) {
@@ -247,7 +261,9 @@ const MerchantHub = () => {
   }
 
   // If not registered as merchant, show registration form
-  if (!isMerchant && !locallyRegistered) {
+  const shouldShowRegistration = (!isMerchant || isMerchant === undefined) && !locallyRegistered;
+  
+  if (shouldShowRegistration) {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-md mx-auto bg-white rounded-lg shadow-md p-6">
@@ -324,9 +340,18 @@ const MerchantHub = () => {
             <h1 className="text-3xl font-bold">Merchant Dashboard</h1>
             <p className="text-gray-600">Welcome back, {merchantInfo?.[0] || "Merchant"}!</p>
           </div>
-          {/* Balance and Earn Yield Button */}
-          <div className="flex items-center bg-gray-50 rounded-lg px-4 py-3">
-            <LiquidBalance address={connectedAddress as `0x${string}`} showLabel={true} />
+          {/* Balance and Withdrawn Interest Display */}
+          <div className="flex items-center bg-gray-50 rounded-lg px-4 py-3 space-x-4">
+            <div className="text-center">
+              <div className="text-sm text-gray-600">LIQUID Balance:</div>
+              <div className="text-xl font-bold text-green-600">{parseFloat(displayBalance).toFixed(4)}</div>
+            </div>
+            {parseFloat(withdrawnInterest) > 0 && (
+              <div className="text-center border-l border-gray-300 pl-4">
+                <div className="text-sm text-gray-600">Interest Withdrawn:</div>
+                <div className="text-lg font-bold text-purple-600">+{parseFloat(withdrawnInterest).toFixed(6)}</div>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -371,7 +396,7 @@ const MerchantHub = () => {
               </div>
 
               <div className="bg-info bg-opacity-20 p-4 rounded-lg text-center border border-info border-opacity-30">
-                <div className="text-2xl font-bold text-blue-600">{formatEther(BigInt(todaysSales.total || 0))}</div>
+                <div className="text-2xl font-bold text-blue-600">{parseFloat(formatEther(BigInt(todaysSales.total || 0))).toFixed(4)}</div>
                 <div className="text-sm text-blue-800">LIQUID Earned Today</div>
               </div>
             </div>
@@ -387,7 +412,7 @@ const MerchantHub = () => {
               </div>
 
               <div className="bg-warning bg-opacity-20 p-4 rounded-lg text-center border border-warning border-opacity-30">
-                <div className="text-2xl font-bold text-orange-600">{formatEther(BigInt(merchantInfo?.[2] || 0))}</div>
+                <div className="text-2xl font-bold text-orange-600">{parseFloat(formatEther(BigInt(merchantInfo?.[2] || 0))).toFixed(4)}</div>
                 <div className="text-sm text-orange-800">Total Sales (LIQUID)</div>
               </div>
             </div>
@@ -417,6 +442,14 @@ const MerchantHub = () => {
           </div>
         </div>
       </div>
+
+      {/* NEW: Merchant Savings Section */}
+      <MerchantSavings 
+        connectedAddress={connectedAddress} 
+        liquidBalance={displayBalance} 
+        onBalanceChange={handleBalanceChange}
+        onWithdrawnInterestChange={handleWithdrawnInterestChange}
+      />
 
       {/* Recent Transactions */}
       <div className="mt-8 bg-base-100 rounded-lg shadow-md p-6">
@@ -454,7 +487,7 @@ const MerchantHub = () => {
                         </div>
                         <div className="text-right">
                           <div className="font-bold text-green-600 text-lg">
-                            +{formatEther(BigInt(tx.amount))} LIQUID
+                            +{parseFloat(formatEther(BigInt(tx.amount))).toFixed(4)} LIQUID
                           </div>
                         </div>
                       </div>
