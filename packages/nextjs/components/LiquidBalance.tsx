@@ -1,6 +1,5 @@
 "use client";
 
-import EarnYieldButton from "./EarnYieldButton";
 import { useAccount } from "wagmi";
 import { useLiquidToken } from "~~/hooks/useLiquidToken";
 
@@ -46,8 +45,6 @@ export const LiquidBalance = ({ address, className = "", showLabel = true }: Liq
           {parseFloat(formattedBalance).toFixed(4)} {symbol || "LIQUID"}
         </span>
       </div>
-      {/* Earn yield button next to balance */}
-      <EarnYieldButton />
     </div>
   );
 };

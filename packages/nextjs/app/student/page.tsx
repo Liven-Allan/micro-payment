@@ -7,6 +7,7 @@ import { useAccount, useWriteContract } from "wagmi";
 import { CurrencyInput } from "~~/components/CurrencyInput";
 import { LiquidBalance } from "~~/components/LiquidBalance";
 import { QRScanner } from "~~/components/QRScanner";
+import { StudentSavings } from "~~/components/StudentSavings";
 import deployedContracts from "~~/contracts/deployedContracts";
 import { useScaffoldReadContract, useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
 import { useLiquidToken } from "~~/hooks/useLiquidToken";
@@ -29,6 +30,7 @@ const StudentWallet = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [step, setStep] = useState<"scan" | "amount" | "confirm" | "processing" | "dashboard">("scan");
   const [refreshBalance, setRefreshBalance] = useState(0);
+  const [localBalance, setLocalBalance] = useState<string | null>(null);
 
   // Get LIQUID token info and balance
   const {
@@ -37,6 +39,14 @@ const StudentWallet = () => {
     abi: liquidAbi,
     refetchBalance,
   } = useLiquidToken(connectedAddress as `0x${string}`);
+
+  // Use local balance if available (after savings interactions), otherwise use the actual balance
+  const displayBalance = localBalance || formattedBalance;
+
+  // Handle balance changes from savings component
+  const handleBalanceChange = (newBalance: string) => {
+    setLocalBalance(newBalance);
+  };
 
   // Get merchant info to verify it's a valid merchant
   const { data: merchantInfo } = useScaffoldReadContract({
@@ -104,7 +114,7 @@ const StudentWallet = () => {
       return;
     }
 
-    if (parseFloat(formattedBalance) < parseFloat(paymentAmount)) {
+    if (parseFloat(displayBalance) < parseFloat(paymentAmount)) {
       toast.error("Insufficient LIQUID balance");
       return;
     }
@@ -236,15 +246,20 @@ const StudentWallet = () => {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-md">
+    <div className="container mx-auto px-4 py-8">
       {/* Header */}
-      <div className="text-center mb-8">
+      <div className="text-center mb-8 max-w-md mx-auto">
         <h1 className="text-3xl font-bold mb-2">Student Wallet</h1>
         <p className="text-gray-600">Scan & Pay with LIQUID tokens</p>
 
         {/* Balance Display */}
         <div className="mt-4 p-4 bg-base-200 rounded-lg">
           <LiquidBalance address={connectedAddress as `0x${string}`} className="text-lg" key={refreshBalance} />
+          {localBalance && (
+            <div className="text-sm text-base-content opacity-60 mt-2">
+              (After savings: {parseFloat(localBalance).toFixed(4)} LIQUID)
+            </div>
+          )}
         </div>
 
         {/* Navigation Buttons */}
@@ -271,6 +286,9 @@ const StudentWallet = () => {
           </button>
         </div>
       </div>
+
+      {/* Payment Steps Container */}
+      <div className="max-w-md mx-auto">
 
       {/* Step 1: QR Scanner */}
       {step === "scan" && (
@@ -414,8 +432,8 @@ const StudentWallet = () => {
           {/* Balance Check */}
           <div className="mb-6 p-3 bg-yellow-50 rounded-lg">
             <div className="text-sm">
-              <div>Your Balance: {parseFloat(formattedBalance).toFixed(4)} LIQUID</div>
-              <div>After Payment: {(parseFloat(formattedBalance) - parseFloat(paymentAmount)).toFixed(4)} LIQUID</div>
+              <div>Your Balance: {parseFloat(displayBalance).toFixed(4)} LIQUID</div>
+              <div>After Payment: {(parseFloat(displayBalance) - parseFloat(paymentAmount)).toFixed(4)} LIQUID</div>
             </div>
           </div>
 
@@ -423,7 +441,7 @@ const StudentWallet = () => {
           <div className="space-y-3">
             <button
               onClick={handlePayment}
-              disabled={isProcessing || parseFloat(formattedBalance) < parseFloat(paymentAmount)}
+              disabled={isProcessing || parseFloat(displayBalance) < parseFloat(paymentAmount)}
               className="w-full bg-green-600 text-white py-3 px-4 rounded-md hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed font-semibold"
             >
               {isProcessing ? "Processing..." : "Confirm & Pay"}
@@ -459,7 +477,7 @@ const StudentWallet = () => {
           <div className="mb-6 p-4 bg-gradient-to-r from-primary from-opacity-10 to-success to-opacity-10 rounded-lg border border-primary border-opacity-20">
             <div className="text-center">
               <div className="text-sm text-base-content opacity-70 mb-1">Current Balance</div>
-              <div className="text-3xl font-bold text-green-600">{parseFloat(formattedBalance).toFixed(4)} LIQUID</div>
+              <div className="text-3xl font-bold text-green-600">{parseFloat(displayBalance).toFixed(4)} LIQUID</div>
             </div>
           </div>
 
@@ -623,6 +641,14 @@ const StudentWallet = () => {
           </div>
         </div>
       )}
+    </div>
+      {/* Student Savings Component */}
+      <StudentSavings
+        connectedAddress={connectedAddress}
+        liquidBalance={formattedBalance}
+        onBalanceChange={handleBalanceChange}
+        onWithdrawnInterestChange={() => {}}
+      />
     </div>
   );
 };
