@@ -6,6 +6,8 @@ import { QRCodeSVG } from "qrcode.react";
 import { formatEther } from "viem";
 import { useAccount } from "wagmi";
 import { MerchantSavings } from "~~/components/MerchantSavings";
+import { useNotifications } from "~~/hooks/useNotifications";
+import { NotificationContainer } from "~~/components/CustomNotification";
 import { useScaffoldReadContract, useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
 import { useLiquidToken } from "~~/hooks/useLiquidToken";
 
@@ -23,6 +25,9 @@ const MerchantHub = () => {
   const [isRegistering, setIsRegistering] = useState(false);
   const [registrationSuccess, setRegistrationSuccess] = useState(false);
   const [locallyRegistered, setLocallyRegistered] = useState(false);
+
+  // Notification system
+  const { notifications, removeNotification, showWarning, showError } = useNotifications();
 
   // Get LIQUID token balance
   const { formattedBalance } = useLiquidToken(connectedAddress as `0x${string}`);
@@ -85,7 +90,7 @@ const MerchantHub = () => {
   // Handle merchant registration
   const handleRegisterMerchant = async () => {
     if (!businessName.trim()) {
-      alert("Please enter your business name");
+      showWarning("Business Name Required", "Please enter your business name to continue with registration.");
       return;
     }
 
@@ -125,7 +130,7 @@ const MerchantHub = () => {
       refreshData();
     } catch (error) {
       console.error("Registration failed:", error);
-      alert("Registration failed. Please try again.");
+      showError("Registration Failed", "Unable to register your business. Please try again.");
       setRegistrationSuccess(false);
     } finally {
       setIsRegistering(false);
@@ -320,194 +325,197 @@ const MerchantHub = () => {
 
   // Main merchant dashboard
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="mb-8">
-        <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="text-center flex-1">
-            <h1 className="text-3xl font-bold">Merchant Dashboard</h1>
-            <p className="text-gray-600">Welcome back, {merchantInfo?.[0] || "Merchant"}!</p>
+    <>
+      <NotificationContainer notifications={notifications} onRemove={removeNotification} />
+      <div className="container mx-auto px-4 py-8">
+        <div className="mb-8">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+            <div className="text-center flex-1">
+              <h1 className="text-3xl font-bold">Merchant Dashboard</h1>
+              <p className="text-gray-600">Welcome back, {merchantInfo?.[0] || "Merchant"}!</p>
+            </div>
+            {/* Balance and Withdrawn Interest Display */}
+            <div className="flex items-center bg-gray-50 rounded-lg px-4 py-3 space-x-4">
+              <div className="text-center">
+                <div className="text-sm text-gray-600">LIQUID Balance:</div>
+                <div className="text-xl font-bold text-green-600">{parseFloat(displayBalance).toFixed(4)}</div>
+              </div>
+              {parseFloat(withdrawnInterest) > 0 && (
+                <div className="text-center border-l border-gray-300 pl-4">
+                  <div className="text-sm text-gray-600">Interest Withdrawn:</div>
+                  <div className="text-lg font-bold text-purple-600">+{parseFloat(withdrawnInterest).toFixed(6)}</div>
+                </div>
+              )}
+            </div>
           </div>
-          {/* Balance and Withdrawn Interest Display */}
-          <div className="flex items-center bg-gray-50 rounded-lg px-4 py-3 space-x-4">
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* QR Code Section - The "Cash Register" */}
+          <div className="bg-base-100 rounded-lg shadow-md p-6">
+            <h2 className="text-xl font-semibold mb-4 text-center text-base-content">Payment QR Code</h2>
+
+            <div className="flex justify-center mb-4">
+              <div className="p-4 bg-base-100 border-2 border-base-300 rounded-lg">
+                <QRCodeSVG value={connectedAddress || ""} size={200} level="M" includeMargin={true} />
+              </div>
+            </div>
+
             <div className="text-center">
-              <div className="text-sm text-gray-600">LIQUID Balance:</div>
-              <div className="text-xl font-bold text-green-600">{parseFloat(displayBalance).toFixed(4)}</div>
-            </div>
-            {parseFloat(withdrawnInterest) > 0 && (
-              <div className="text-center border-l border-gray-300 pl-4">
-                <div className="text-sm text-gray-600">Interest Withdrawn:</div>
-                <div className="text-lg font-bold text-purple-600">+{parseFloat(withdrawnInterest).toFixed(6)}</div>
+              <p className="text-sm text-base-content opacity-70 mb-2">Students scan this code to pay you</p>
+              <div className="bg-base-200 p-2 rounded text-xs break-all">
+                <Address address={connectedAddress} />
               </div>
-            )}
-          </div>
-        </div>
-      </div>
+            </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* QR Code Section - The "Cash Register" */}
-        <div className="bg-base-100 rounded-lg shadow-md p-6">
-          <h2 className="text-xl font-semibold mb-4 text-center text-base-content">Payment QR Code</h2>
-
-          <div className="flex justify-center mb-4">
-            <div className="p-4 bg-base-100 border-2 border-base-300 rounded-lg">
-              <QRCodeSVG value={connectedAddress || ""} size={200} level="M" includeMargin={true} />
+            <div className="mt-4 p-3 bg-info bg-opacity-20 rounded-lg">
+              <p className="text-sm text-base-content">
+                <strong>How it works:</strong> Students scan your QR code, enter the amount, and pay instantly with
+                LIQUID tokens. Simple and secure payments!
+              </p>
             </div>
           </div>
 
-          <div className="text-center">
-            <p className="text-sm text-base-content opacity-70 mb-2">Students scan this code to pay you</p>
-            <div className="bg-base-200 p-2 rounded text-xs break-all">
-              <Address address={connectedAddress} />
-            </div>
-          </div>
+          {/* Sales Dashboard */}
+          <div className="bg-base-100 rounded-lg shadow-md p-6">
+            <h2 className="text-xl font-semibold mb-4 text-base-content">Sales Dashboard</h2>
 
-          <div className="mt-4 p-3 bg-info bg-opacity-20 rounded-lg">
-            <p className="text-sm text-base-content">
-              <strong>How it works:</strong> Students scan your QR code, enter the amount, and pay instantly with LIQUID
-              tokens. Simple and secure payments!
-            </p>
-          </div>
-        </div>
-
-        {/* Sales Dashboard */}
-        <div className="bg-base-100 rounded-lg shadow-md p-6">
-          <h2 className="text-xl font-semibold mb-4 text-base-content">Sales Dashboard</h2>
-
-          {/* Today&apos;s Sales */}
-          <div className="mb-4">
-            <h3 className="text-lg font-semibold text-base-content mb-3">Today&apos;s Performance</h3>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="bg-success bg-opacity-20 p-4 rounded-lg text-center border border-success border-opacity-30">
-                <div className="text-2xl font-bold text-green-600">{todaysSales.count}</div>
-                <div className="text-sm text-green-800">Today&apos;s Transactions</div>
-              </div>
-
-              <div className="bg-info bg-opacity-20 p-4 rounded-lg text-center border border-info border-opacity-30">
-                <div className="text-2xl font-bold text-blue-600">
-                  {parseFloat(formatEther(BigInt(todaysSales.total || 0))).toFixed(4)}
+            {/* Today&apos;s Sales */}
+            <div className="mb-4">
+              <h3 className="text-lg font-semibold text-base-content mb-3">Today&apos;s Performance</h3>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="bg-success bg-opacity-20 p-4 rounded-lg text-center border border-success border-opacity-30">
+                  <div className="text-2xl font-bold text-green-600">{todaysSales.count}</div>
+                  <div className="text-sm text-green-800">Today&apos;s Transactions</div>
                 </div>
-                <div className="text-sm text-blue-800">LIQUID Earned Today</div>
-              </div>
-            </div>
-          </div>
 
-          {/* All-Time Stats */}
-          <div className="mb-6">
-            <h3 className="text-lg font-semibold text-base-content mb-3">All-Time Stats</h3>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="bg-secondary bg-opacity-20 p-4 rounded-lg text-center border border-secondary border-opacity-30">
-                <div className="text-2xl font-bold text-purple-600">{merchantInfo?.[3]?.toString() || "0"}</div>
-                <div className="text-sm text-purple-800">Total Transactions</div>
-              </div>
-
-              <div className="bg-warning bg-opacity-20 p-4 rounded-lg text-center border border-warning border-opacity-30">
-                <div className="text-2xl font-bold text-orange-600">
-                  {parseFloat(formatEther(BigInt(merchantInfo?.[2] || 0))).toFixed(4)}
+                <div className="bg-info bg-opacity-20 p-4 rounded-lg text-center border border-info border-opacity-30">
+                  <div className="text-2xl font-bold text-blue-600">
+                    {parseFloat(formatEther(BigInt(todaysSales.total || 0))).toFixed(4)}
+                  </div>
+                  <div className="text-sm text-blue-800">LIQUID Earned Today</div>
                 </div>
-                <div className="text-sm text-orange-800">Total Sales (LIQUID)</div>
               </div>
             </div>
-          </div>
 
-          {/* Business Info */}
-          <div className="border-t border-base-300 pt-4">
-            <h3 className="font-semibold mb-2 text-base-content">Business Information</h3>
-            <div className="space-y-2 text-sm">
-              <div>
-                <span className="font-medium text-base-content">Business Name:</span>
-                <span className="text-base-content opacity-80"> {merchantInfo?.[0] || "N/A"}</span>
+            {/* All-Time Stats */}
+            <div className="mb-6">
+              <h3 className="text-lg font-semibold text-base-content mb-3">All-Time Stats</h3>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="bg-secondary bg-opacity-20 p-4 rounded-lg text-center border border-secondary border-opacity-30">
+                  <div className="text-2xl font-bold text-purple-600">{merchantInfo?.[3]?.toString() || "0"}</div>
+                  <div className="text-sm text-purple-800">Total Transactions</div>
+                </div>
+
+                <div className="bg-warning bg-opacity-20 p-4 rounded-lg text-center border border-warning border-opacity-30">
+                  <div className="text-2xl font-bold text-orange-600">
+                    {parseFloat(formatEther(BigInt(merchantInfo?.[2] || 0))).toFixed(4)}
+                  </div>
+                  <div className="text-sm text-orange-800">Total Sales (LIQUID)</div>
+                </div>
               </div>
-              <div>
-                <span className="font-medium text-base-content">Status:</span>{" "}
-                <span className={merchantInfo?.[1] ? "text-success" : "text-error"}>
-                  {merchantInfo?.[1] ? "Active" : "Inactive"}
-                </span>
-              </div>
-              <div>
-                <span className="font-medium text-base-content">Wallet Address:</span>
-                <div className="mt-1">
-                  <Address address={connectedAddress} />
+            </div>
+
+            {/* Business Info */}
+            <div className="border-t border-base-300 pt-4">
+              <h3 className="font-semibold mb-2 text-base-content">Business Information</h3>
+              <div className="space-y-2 text-sm">
+                <div>
+                  <span className="font-medium text-base-content">Business Name:</span>
+                  <span className="text-base-content opacity-80"> {merchantInfo?.[0] || "N/A"}</span>
+                </div>
+                <div>
+                  <span className="font-medium text-base-content">Status:</span>{" "}
+                  <span className={merchantInfo?.[1] ? "text-success" : "text-error"}>
+                    {merchantInfo?.[1] ? "Active" : "Inactive"}
+                  </span>
+                </div>
+                <div>
+                  <span className="font-medium text-base-content">Wallet Address:</span>
+                  <div className="mt-1">
+                    <Address address={connectedAddress} />
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
 
-      {/* NEW: Merchant Savings Section */}
-      <MerchantSavings
-        connectedAddress={connectedAddress}
-        liquidBalance={displayBalance}
-        onBalanceChange={handleBalanceChange}
-        onWithdrawnInterestChange={handleWithdrawnInterestChange}
-      />
+        {/* NEW: Merchant Savings Section */}
+        <MerchantSavings
+          connectedAddress={connectedAddress}
+          liquidBalance={displayBalance}
+          onBalanceChange={handleBalanceChange}
+          onWithdrawnInterestChange={handleWithdrawnInterestChange}
+        />
 
-      {/* Recent Transactions */}
-      <div className="mt-8 bg-base-100 rounded-lg shadow-md p-6">
-        <h2 className="text-xl font-semibold mb-4 text-base-content">Recent Transactions</h2>
+        {/* Recent Transactions */}
+        <div className="mt-8 bg-base-100 rounded-lg shadow-md p-6">
+          <h2 className="text-xl font-semibold mb-4 text-base-content">Recent Transactions</h2>
 
-        {transactions && transactions.length > 0 ? (
-          <div className="relative">
-            <div className="space-y-3 max-h-64 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
-              {transactions
-                .slice()
-                .reverse()
-                .slice(0, 10)
-                .map((tx: any, index: number) => {
-                  console.log(`Rendering transaction ${index}:`, tx);
-                  return (
-                    <div key={index} className="p-4 border border-base-300 bg-base-100 rounded-lg hover:bg-base-200">
-                      <div className="flex justify-between items-start">
-                        <div className="flex-1">
-                          <div className="font-semibold text-base-content flex items-center">
-                            Payment Received
-                            <span className="ml-2 px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">
-                              Completed
-                            </span>
+          {transactions && transactions.length > 0 ? (
+            <div className="relative">
+              <div className="space-y-3 max-h-64 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+                {transactions
+                  .slice()
+                  .reverse()
+                  .slice(0, 10)
+                  .map((tx: any, index: number) => {
+                    console.log(`Rendering transaction ${index}:`, tx);
+                    return (
+                      <div key={index} className="p-4 border border-base-300 bg-base-100 rounded-lg hover:bg-base-200">
+                        <div className="flex justify-between items-start">
+                          <div className="flex-1">
+                            <div className="font-semibold text-base-content flex items-center">
+                              Payment Received
+                              <span className="ml-2 px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">
+                                Completed
+                              </span>
+                            </div>
+                            <div className="text-sm text-base-content opacity-70 mt-1">
+                              From: <Address address={tx.student} size="sm" />
+                            </div>
+                            <div className="text-xs text-base-content opacity-50 mt-1">
+                              {new Date(Number(tx.timestamp) * 1000).toLocaleDateString()}{" "}
+                              {new Date(Number(tx.timestamp) * 1000).toLocaleTimeString([], {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              })}
+                            </div>
                           </div>
-                          <div className="text-sm text-base-content opacity-70 mt-1">
-                            From: <Address address={tx.student} size="sm" />
-                          </div>
-                          <div className="text-xs text-base-content opacity-50 mt-1">
-                            {new Date(Number(tx.timestamp) * 1000).toLocaleDateString()}{" "}
-                            {new Date(Number(tx.timestamp) * 1000).toLocaleTimeString([], {
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            })}
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <div className="font-bold text-green-600 text-lg">
-                            +{parseFloat(formatEther(BigInt(tx.amount))).toFixed(4)} LIQUID
+                          <div className="text-right">
+                            <div className="font-bold text-green-600 text-lg">
+                              +{parseFloat(formatEther(BigInt(tx.amount))).toFixed(4)} LIQUID
+                            </div>
                           </div>
                         </div>
                       </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })}
+              </div>
+
+              {/* Scroll indicator */}
+              {transactions && transactions.length > 3 && (
+                <div className="absolute bottom-0 left-0 right-0 h-6 bg-gradient-to-t from-base-100 to-transparent pointer-events-none flex items-end justify-center">
+                  <div className="text-xs text-base-content opacity-40 mb-1">↓ Scroll for more ↓</div>
+                </div>
+              )}
+
+              {transactions.length > 10 && (
+                <div className="text-center py-2 text-base-content opacity-70 text-sm border-t border-base-300 mt-2">
+                  Showing last 10 transactions of {transactions.length} total
+                </div>
+              )}
             </div>
-
-            {/* Scroll indicator */}
-            {transactions && transactions.length > 3 && (
-              <div className="absolute bottom-0 left-0 right-0 h-6 bg-gradient-to-t from-base-100 to-transparent pointer-events-none flex items-end justify-center">
-                <div className="text-xs text-base-content opacity-40 mb-1">↓ Scroll for more ↓</div>
-              </div>
-            )}
-
-            {transactions.length > 10 && (
-              <div className="text-center py-2 text-base-content opacity-70 text-sm border-t border-base-300 mt-2">
-                Showing last 10 transactions of {transactions.length} total
-              </div>
-            )}
-          </div>
-        ) : (
-          <div className="text-center py-8 text-base-content opacity-60">
-            <p className="font-medium">No transactions yet</p>
-            <p className="text-sm mt-2">Share your QR code with students to start receiving payments!</p>
-          </div>
-        )}
+          ) : (
+            <div className="text-center py-8 text-base-content opacity-60">
+              <p className="font-medium">No transactions yet</p>
+              <p className="text-sm mt-2">Share your QR code with students to start receiving payments!</p>
+            </div>
+          )}
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 

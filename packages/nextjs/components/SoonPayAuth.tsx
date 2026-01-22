@@ -7,6 +7,8 @@
 import { useState } from "react";
 import { useAccount } from "wagmi";
 import { useSoonPayAuth } from "~~/hooks/useSoonPayAuth";
+import { useNotifications } from "~~/hooks/useNotifications";
+import { NotificationContainer } from "~~/components/CustomNotification";
 
 interface SoonPayAuthProps {
   onAuthSuccess?: () => void;
@@ -16,6 +18,7 @@ interface SoonPayAuthProps {
 export const SoonPayAuth = ({ onAuthSuccess, userType = "student" }: SoonPayAuthProps) => {
   const { address: connectedAddress } = useAccount();
   const { isAuthenticated, user, isLoading, error, login, logout, register, isEnabled } = useSoonPayAuth();
+  const { notifications, removeNotification, showWarning } = useNotifications();
 
   const [mode, setMode] = useState<"login" | "register">("login");
   const [formData, setFormData] = useState({
@@ -80,7 +83,7 @@ export const SoonPayAuth = ({ onAuthSuccess, userType = "student" }: SoonPayAuth
     e.preventDefault();
 
     if (!connectedAddress) {
-      alert("Please connect your wallet first");
+      showWarning("Wallet Required", "Please connect your wallet first before proceeding.");
       return;
     }
 
@@ -89,7 +92,7 @@ export const SoonPayAuth = ({ onAuthSuccess, userType = "student" }: SoonPayAuth
         await login(formData.email, formData.password);
       } else {
         if (formData.password !== formData.confirmPassword) {
-          alert("Passwords do not match");
+          showWarning("Password Mismatch", "Passwords do not match. Please check and try again.");
           return;
         }
         await register(formData.email, formData.password, userType, connectedAddress);
@@ -103,97 +106,100 @@ export const SoonPayAuth = ({ onAuthSuccess, userType = "student" }: SoonPayAuth
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6 max-w-md mx-auto">
-      <div className="text-center mb-6">
-        <h2 className="text-2xl font-bold text-gray-900">
-          {mode === "login" ? "Login to SoonPay" : "Create SoonPay Account"}
-        </h2>
-        <p className="text-gray-600 mt-2">
-          {mode === "login"
-            ? "Access your SoonPay account for enhanced features"
-            : `Create a ${userType} account to get started`}
-        </p>
-      </div>
-
-      {error && (
-        <div className="bg-red-50 border border-red-200 rounded-md p-3 mb-4">
-          <div className="text-sm text-red-700">{error}</div>
-        </div>
-      )}
-
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
-          <input
-            type="email"
-            value={formData.email}
-            onChange={e => setFormData(prev => ({ ...prev, email: e.target.value }))}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="student@makerere.ac.ug"
-            required
-          />
+    <>
+      <NotificationContainer notifications={notifications} onRemove={removeNotification} />
+      <div className="bg-white rounded-lg shadow-md p-6 max-w-md mx-auto">
+        <div className="text-center mb-6">
+          <h2 className="text-2xl font-bold text-gray-900">
+            {mode === "login" ? "Login to SoonPay" : "Create SoonPay Account"}
+          </h2>
+          <p className="text-gray-600 mt-2">
+            {mode === "login"
+              ? "Access your SoonPay account for enhanced features"
+              : `Create a ${userType} account to get started`}
+          </p>
         </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
-          <input
-            type="password"
-            value={formData.password}
-            onChange={e => setFormData(prev => ({ ...prev, password: e.target.value }))}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            required
-          />
-        </div>
+        {error && (
+          <div className="bg-red-50 border border-red-200 rounded-md p-3 mb-4">
+            <div className="text-sm text-red-700">{error}</div>
+          </div>
+        )}
 
-        {mode === "register" && (
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Confirm Password</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+            <input
+              type="email"
+              value={formData.email}
+              onChange={e => setFormData(prev => ({ ...prev, email: e.target.value }))}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="student@makerere.ac.ug"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
             <input
               type="password"
-              value={formData.confirmPassword}
-              onChange={e =>
-                setFormData(prev => ({
-                  ...prev,
-                  confirmPassword: e.target.value,
-                }))
-              }
+              value={formData.password}
+              onChange={e => setFormData(prev => ({ ...prev, password: e.target.value }))}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
             />
           </div>
-        )}
 
-        <button
-          type="submit"
-          disabled={isLoading}
-          className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {isLoading
-            ? mode === "login"
-              ? "Logging in..."
-              : "Creating account..."
-            : mode === "login"
-              ? "Login"
-              : "Create Account"}
-        </button>
-      </form>
+          {mode === "register" && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Confirm Password</label>
+              <input
+                type="password"
+                value={formData.confirmPassword}
+                onChange={e =>
+                  setFormData(prev => ({
+                    ...prev,
+                    confirmPassword: e.target.value,
+                  }))
+                }
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                required
+              />
+            </div>
+          )}
 
-      <div className="mt-4 text-center">
-        <button
-          onClick={() => setMode(mode === "login" ? "register" : "login")}
-          className="text-blue-600 hover:text-blue-800 text-sm"
-        >
-          {mode === "login" ? "Don't have an account? Sign up" : "Already have an account? Login"}
-        </button>
-      </div>
+          <button
+            type="submit"
+            disabled={isLoading}
+            className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isLoading
+              ? mode === "login"
+                ? "Logging in..."
+                : "Creating account..."
+              : mode === "login"
+                ? "Login"
+                : "Create Account"}
+          </button>
+        </form>
 
-      {!connectedAddress && (
-        <div className="mt-4 bg-yellow-50 border border-yellow-200 rounded-md p-3">
-          <div className="text-sm text-yellow-700">
-            Please connect your wallet first to link it with your SoonPay account.
-          </div>
+        <div className="mt-4 text-center">
+          <button
+            onClick={() => setMode(mode === "login" ? "register" : "login")}
+            className="text-blue-600 hover:text-blue-800 text-sm"
+          >
+            {mode === "login" ? "Don't have an account? Sign up" : "Already have an account? Login"}
+          </button>
         </div>
-      )}
-    </div>
+
+        {!connectedAddress && (
+          <div className="mt-4 bg-yellow-50 border border-yellow-200 rounded-md p-3">
+            <div className="text-sm text-yellow-700">
+              Please connect your wallet first to link it with your SoonPay account.
+            </div>
+          </div>
+        )}
+      </div>
+    </>
   );
 };
