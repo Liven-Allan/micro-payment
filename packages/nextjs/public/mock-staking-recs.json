@@ -1,23 +1,23 @@
 [
-    {
-        "protocol": "Lido",
-        "action": "stake",
-        "apr": 0.038,
-        "confidence": 0.85,
-        "reason": "Liquid staking, large protocol with high liquidity."
-    },
-    {
-        "protocol": "Aave",
-        "action": "consider",
-        "apr": 0.02,
-        "confidence": 0.6,
-        "reason": "Low APR but good liquidity; consider if you need lending exposure."
-    },
-    {
-        "protocol": "SmallProtocolX",
-        "action": "wait",
-        "apr": 0.12,
-        "confidence": 0.25,
-        "reason": "High APR but low liquidity and higher risk—research before staking."
-    }
+  {
+    "protocol": "Lido",
+    "action": "stake",
+    "apr": 0.038,
+    "confidence": 0.85,
+    "reason": "Liquid staking, large protocol with high liquidity."
+  },
+  {
+    "protocol": "Aave",
+    "action": "consider",
+    "apr": 0.02,
+    "confidence": 0.6,
+    "reason": "Low APR but good liquidity; consider if you need lending exposure."
+  },
+  {
+    "protocol": "SmallProtocolX",
+    "action": "wait",
+    "apr": 0.12,
+    "confidence": 0.25,
+    "reason": "High APR but low liquidity and higher risk—research before staking."
+  }
 ]

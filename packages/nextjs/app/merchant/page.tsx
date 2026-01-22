@@ -5,7 +5,6 @@ import { Address } from "@scaffold-ui/components";
 import { QRCodeSVG } from "qrcode.react";
 import { formatEther } from "viem";
 import { useAccount } from "wagmi";
-import { LiquidBalance } from "~~/components/LiquidBalance";
 import { MerchantSavings } from "~~/components/MerchantSavings";
 import { useScaffoldReadContract, useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
 import { useLiquidToken } from "~~/hooks/useLiquidToken";
@@ -26,12 +25,12 @@ const MerchantHub = () => {
   const [locallyRegistered, setLocallyRegistered] = useState(false);
 
   // Get LIQUID token balance
-  const { formattedBalance, refetchBalance } = useLiquidToken(connectedAddress as `0x${string}`);
-  
+  const { formattedBalance } = useLiquidToken(connectedAddress as `0x${string}`);
+
   // Local balance state for savings interactions (simulated)
   const [localBalance, setLocalBalance] = useState<string | null>(null);
   const [withdrawnInterest, setWithdrawnInterest] = useState<string>("0");
-  
+
   // Use local balance if available, otherwise use the actual balance
   const displayBalance = localBalance || formattedBalance;
 
@@ -262,7 +261,7 @@ const MerchantHub = () => {
 
   // If not registered as merchant, show registration form
   const shouldShowRegistration = (!isMerchant || isMerchant === undefined) && !locallyRegistered;
-  
+
   if (shouldShowRegistration) {
     return (
       <div className="container mx-auto px-4 py-8">
@@ -364,8 +363,8 @@ const MerchantHub = () => {
 
           <div className="mt-4 p-3 bg-info bg-opacity-20 rounded-lg">
             <p className="text-sm text-base-content">
-              <strong>How it works:</strong> Students scan your QR code, enter the amount, and pay instantly with
-              LIQUID tokens. Simple and secure payments!
+              <strong>How it works:</strong> Students scan your QR code, enter the amount, and pay instantly with LIQUID
+              tokens. Simple and secure payments!
             </p>
           </div>
         </div>
@@ -384,7 +383,9 @@ const MerchantHub = () => {
               </div>
 
               <div className="bg-info bg-opacity-20 p-4 rounded-lg text-center border border-info border-opacity-30">
-                <div className="text-2xl font-bold text-blue-600">{parseFloat(formatEther(BigInt(todaysSales.total || 0))).toFixed(4)}</div>
+                <div className="text-2xl font-bold text-blue-600">
+                  {parseFloat(formatEther(BigInt(todaysSales.total || 0))).toFixed(4)}
+                </div>
                 <div className="text-sm text-blue-800">LIQUID Earned Today</div>
               </div>
             </div>
@@ -400,7 +401,9 @@ const MerchantHub = () => {
               </div>
 
               <div className="bg-warning bg-opacity-20 p-4 rounded-lg text-center border border-warning border-opacity-30">
-                <div className="text-2xl font-bold text-orange-600">{parseFloat(formatEther(BigInt(merchantInfo?.[2] || 0))).toFixed(4)}</div>
+                <div className="text-2xl font-bold text-orange-600">
+                  {parseFloat(formatEther(BigInt(merchantInfo?.[2] || 0))).toFixed(4)}
+                </div>
                 <div className="text-sm text-orange-800">Total Sales (LIQUID)</div>
               </div>
             </div>
@@ -432,9 +435,9 @@ const MerchantHub = () => {
       </div>
 
       {/* NEW: Merchant Savings Section */}
-      <MerchantSavings 
-        connectedAddress={connectedAddress} 
-        liquidBalance={displayBalance} 
+      <MerchantSavings
+        connectedAddress={connectedAddress}
+        liquidBalance={displayBalance}
         onBalanceChange={handleBalanceChange}
         onWithdrawnInterestChange={handleWithdrawnInterestChange}
       />

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 // Configuration for LIQUID token exchange rate
 const LIQUID_CONFIG = {
@@ -31,7 +31,7 @@ export const useCurrencyConverter = (): CurrencyConverterHook => {
       if (LIQUID_CONFIG.USE_LIVE_API) {
         // Try to fetch from CoinGecko API
         console.log("🔄 Fetching live LIQUID rate from CoinGecko...");
-        
+
         // First try to get UGX directly
         const response = await fetch(
           `https://api.coingecko.com/api/v3/simple/price?ids=${LIQUID_CONFIG.COINGECKO_ID}&vs_currencies=ugx&x_cg_demo_api_key=CG-fBP52GvjZkm2CZunNEQUCL2m`,
@@ -46,7 +46,7 @@ export const useCurrencyConverter = (): CurrencyConverterHook => {
         if (response.ok) {
           const data = await response.json();
           console.log("📊 ALI token API response (UGX):", data);
-          
+
           if (data[LIQUID_CONFIG.COINGECKO_ID] && data[LIQUID_CONFIG.COINGECKO_ID].ugx) {
             console.log("✅ Live LIQUID rate fetched (UGX):", data[LIQUID_CONFIG.COINGECKO_ID].ugx, "UGX");
             setExchangeRate(data[LIQUID_CONFIG.COINGECKO_ID].ugx);
@@ -71,32 +71,32 @@ export const useCurrencyConverter = (): CurrencyConverterHook => {
         if (usdResponse.ok) {
           const usdData = await usdResponse.json();
           console.log("📊 ALI token USD response:", usdData);
-          
+
           if (usdData[LIQUID_CONFIG.COINGECKO_ID] && usdData[LIQUID_CONFIG.COINGECKO_ID].usd) {
             const usdPrice = usdData[LIQUID_CONFIG.COINGECKO_ID].usd;
             console.log("💵 ALI price in USD:", usdPrice);
-            
+
             // Convert USD to UGX (approximate rate: 1 USD = 3700 UGX)
             const usdToUgxRate = 3700; // You can make this dynamic too if needed
             const ugxPrice = usdPrice * usdToUgxRate;
-            
+
             console.log("🔄 Converting USD to UGX:", usdPrice, "USD * ", usdToUgxRate, "= ", ugxPrice, "UGX");
             console.log("✅ Live LIQUID rate calculated:", ugxPrice, "UGX per LIQUID");
-            
+
             setExchangeRate(ugxPrice);
             return;
           }
         }
       }
-      
+
       // Use configured custom rate for LIQUID token
       console.log("💡 Using configured LIQUID token rate for micro-payment system");
       console.log("✅ LIQUID rate set:", LIQUID_CONFIG.EXCHANGE_RATE_UGX, "UGX per LIQUID");
       setExchangeRate(LIQUID_CONFIG.EXCHANGE_RATE_UGX);
-      
+
       // Test API connection (optional)
       console.log("🧪 Testing API connection...");
-      
+
       // Test Bitcoin (we know this works)
       const testResponse = await fetch(
         "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd&x_cg_demo_api_key=CG-fBP52GvjZkm2CZunNEQUCL2m",
@@ -107,12 +107,12 @@ export const useCurrencyConverter = (): CurrencyConverterHook => {
           },
         },
       );
-      
+
       if (testResponse.ok) {
         const testData = await testResponse.json();
         console.log("🧪 API connection successful. Bitcoin price:", testData.bitcoin?.usd);
       }
-      
+
       // Test ALI token directly
       console.log("🧪 Testing ALI token API call directly...");
       const aliTestResponse = await fetch(
@@ -124,14 +124,13 @@ export const useCurrencyConverter = (): CurrencyConverterHook => {
           },
         },
       );
-      
+
       if (aliTestResponse.ok) {
         const aliTestData = await aliTestResponse.json();
         console.log("🧪 ALI token test response:", aliTestData);
       } else {
         console.error("❌ ALI token test failed with status:", aliTestResponse.status);
       }
-      
     } catch (err) {
       console.error("❌ Error in currency setup:", err);
       setError("Using default exchange rate");

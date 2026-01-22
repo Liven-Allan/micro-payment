@@ -2,15 +2,14 @@
  * SoonPay Authentication Hook
  * Handles user authentication with SoonPay while maintaining local wallet functionality
  */
-
-import { useState, useEffect } from 'react';
-import { soonPayConfig } from '~~/config/soonpay.config';
+import { useEffect, useState } from "react";
+import { soonPayConfig } from "~~/config/soonpay.config";
 
 export interface SoonPayUser {
   id: string;
   email: string;
   walletAddress: string;
-  userType: 'student' | 'merchant';
+  userType: "student" | "merchant";
   verified: boolean;
 }
 
@@ -26,7 +25,7 @@ export const useSoonPayAuth = () => {
     isAuthenticated: false,
     user: null,
     isLoading: false,
-    error: null
+    error: null,
   });
 
   // Initialize authentication state
@@ -45,7 +44,7 @@ export const useSoonPayAuth = () => {
 
     try {
       // Check if user has stored auth token
-      const token = localStorage.getItem('soonpay_auth_token');
+      const token = localStorage.getItem("soonpay_auth_token");
       if (!token) {
         setAuthState(prev => ({ ...prev, isLoading: false }));
         return;
@@ -53,38 +52,38 @@ export const useSoonPayAuth = () => {
 
       // Validate token with SoonPay API (simulated for local development)
       const response = await validateAuthToken(token);
-      
+
       if (response.valid) {
         setAuthState({
           isAuthenticated: true,
           user: response.user,
           isLoading: false,
-          error: null
+          error: null,
         });
       } else {
         // Clear invalid token
-        localStorage.removeItem('soonpay_auth_token');
+        localStorage.removeItem("soonpay_auth_token");
         setAuthState({
           isAuthenticated: false,
           user: null,
           isLoading: false,
-          error: null
+          error: null,
         });
       }
     } catch (error) {
-      console.error('Auth check failed:', error);
+      console.error("Auth check failed:", error);
       setAuthState({
         isAuthenticated: false,
         user: null,
         isLoading: false,
-        error: 'Authentication check failed'
+        error: "Authentication check failed",
       });
     }
   };
 
   const login = async (email: string, password: string) => {
     if (!soonPayConfig.enabled) {
-      throw new Error('SoonPay integration is disabled');
+      throw new Error("SoonPay integration is disabled");
     }
 
     setAuthState(prev => ({ ...prev, isLoading: true, error: null }));
@@ -92,43 +91,43 @@ export const useSoonPayAuth = () => {
     try {
       // Simulate SoonPay login (replace with actual API call)
       const response = await authenticateUser(email, password);
-      
+
       if (response.success) {
-        localStorage.setItem('soonpay_auth_token', response.token);
+        localStorage.setItem("soonpay_auth_token", response.token);
         setAuthState({
           isAuthenticated: true,
           user: response.user,
           isLoading: false,
-          error: null
+          error: null,
         });
         return response.user;
       } else {
-        throw new Error(response.error || 'Login failed');
+        throw new Error(response.error || "Login failed");
       }
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Login failed';
+      const errorMessage = error instanceof Error ? error.message : "Login failed";
       setAuthState(prev => ({
         ...prev,
         isLoading: false,
-        error: errorMessage
+        error: errorMessage,
       }));
       throw error;
     }
   };
 
   const logout = async () => {
-    localStorage.removeItem('soonpay_auth_token');
+    localStorage.removeItem("soonpay_auth_token");
     setAuthState({
       isAuthenticated: false,
       user: null,
       isLoading: false,
-      error: null
+      error: null,
     });
   };
 
-  const register = async (email: string, password: string, userType: 'student' | 'merchant', walletAddress: string) => {
+  const register = async (email: string, password: string, userType: "student" | "merchant", walletAddress: string) => {
     if (!soonPayConfig.enabled) {
-      throw new Error('SoonPay integration is disabled');
+      throw new Error("SoonPay integration is disabled");
     }
 
     setAuthState(prev => ({ ...prev, isLoading: true, error: null }));
@@ -136,25 +135,25 @@ export const useSoonPayAuth = () => {
     try {
       // Simulate SoonPay registration (replace with actual API call)
       const response = await registerUser(email, password, userType, walletAddress);
-      
+
       if (response.success) {
-        localStorage.setItem('soonpay_auth_token', response.token);
+        localStorage.setItem("soonpay_auth_token", response.token);
         setAuthState({
           isAuthenticated: true,
           user: response.user,
           isLoading: false,
-          error: null
+          error: null,
         });
         return response.user;
       } else {
-        throw new Error(response.error || 'Registration failed');
+        throw new Error(response.error || "Registration failed");
       }
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Registration failed';
+      const errorMessage = error instanceof Error ? error.message : "Registration failed";
       setAuthState(prev => ({
         ...prev,
         isLoading: false,
-        error: errorMessage
+        error: errorMessage,
       }));
       throw error;
     }
@@ -166,7 +165,7 @@ export const useSoonPayAuth = () => {
     logout,
     register,
     checkAuthStatus,
-    isEnabled: soonPayConfig.enabled
+    isEnabled: soonPayConfig.enabled,
   };
 };
 
@@ -174,31 +173,31 @@ export const useSoonPayAuth = () => {
 const validateAuthToken = async (token: string): Promise<{ valid: boolean; user?: SoonPayUser }> => {
   // Simulate API delay
   await new Promise(resolve => setTimeout(resolve, 500));
-  
+
   // For local development, simulate a valid user
-  if (soonPayConfig.environment === 'local') {
+  if (soonPayConfig.environment === "local") {
     return {
       valid: true,
       user: {
-        id: 'local_user_123',
-        email: 'student@makerere.ac.ug',
-        walletAddress: '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266',
-        userType: 'student',
-        verified: true
-      }
+        id: "local_user_123",
+        email: "student@makerere.ac.ug",
+        walletAddress: "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+        userType: "student",
+        verified: true,
+      },
     };
   }
-  
+
   // For live environments, make actual API call
   try {
     const response = await fetch(`${soonPayConfig.authEndpoint}/validate`, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      }
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
     });
-    
+
     return await response.json();
   } catch (error) {
     return { valid: false };
@@ -208,69 +207,74 @@ const validateAuthToken = async (token: string): Promise<{ valid: boolean; user?
 const authenticateUser = async (email: string, password: string): Promise<any> => {
   // Simulate API delay
   await new Promise(resolve => setTimeout(resolve, 1000));
-  
+
   // For local development, simulate successful login
-  if (soonPayConfig.environment === 'local') {
+  if (soonPayConfig.environment === "local") {
     return {
       success: true,
-      token: 'local_auth_token_' + Date.now(),
+      token: "local_auth_token_" + Date.now(),
       user: {
-        id: 'local_user_' + Date.now(),
+        id: "local_user_" + Date.now(),
         email,
-        walletAddress: '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266',
-        userType: email.includes('merchant') ? 'merchant' : 'student',
-        verified: true
-      }
+        walletAddress: "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+        userType: email.includes("merchant") ? "merchant" : "student",
+        verified: true,
+      },
     };
   }
-  
+
   // For live environments, make actual API call
   try {
     const response = await fetch(`${soonPayConfig.authEndpoint}/login`, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json'
+        "Content-Type": "application/json",
       },
-      body: JSON.stringify({ email, password })
+      body: JSON.stringify({ email, password }),
     });
-    
+
     return await response.json();
   } catch (error) {
-    return { success: false, error: 'Network error' };
+    return { success: false, error: "Network error" };
   }
 };
 
-const registerUser = async (email: string, password: string, userType: 'student' | 'merchant', walletAddress: string): Promise<any> => {
+const registerUser = async (
+  email: string,
+  password: string,
+  userType: "student" | "merchant",
+  walletAddress: string,
+): Promise<any> => {
   // Simulate API delay
   await new Promise(resolve => setTimeout(resolve, 1000));
-  
+
   // For local development, simulate successful registration
-  if (soonPayConfig.environment === 'local') {
+  if (soonPayConfig.environment === "local") {
     return {
       success: true,
-      token: 'local_auth_token_' + Date.now(),
+      token: "local_auth_token_" + Date.now(),
       user: {
-        id: 'local_user_' + Date.now(),
+        id: "local_user_" + Date.now(),
         email,
         walletAddress,
         userType,
-        verified: true
-      }
+        verified: true,
+      },
     };
   }
-  
+
   // For live environments, make actual API call
   try {
     const response = await fetch(`${soonPayConfig.authEndpoint}/register`, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json'
+        "Content-Type": "application/json",
       },
-      body: JSON.stringify({ email, password, userType, walletAddress })
+      body: JSON.stringify({ email, password, userType, walletAddress }),
     });
-    
+
     return await response.json();
   } catch (error) {
-    return { success: false, error: 'Network error' };
+    return { success: false, error: "Network error" };
   }
 };

@@ -9,7 +9,12 @@ interface MerchantSavingsProps {
   onWithdrawnInterestChange: (withdrawnInterest: string) => void; // Callback to update withdrawn interest
 }
 
-export const MerchantSavings = ({ connectedAddress, liquidBalance, onBalanceChange, onWithdrawnInterestChange }: MerchantSavingsProps) => {
+export const MerchantSavings = ({
+  connectedAddress,
+  liquidBalance,
+  onBalanceChange,
+  onWithdrawnInterestChange,
+}: MerchantSavingsProps) => {
   // Simulated savings data (no smart contracts, just local state)
   const [savingsBalance, setSavingsBalance] = useState("0");
   const [totalEarned, setTotalEarned] = useState("0");
@@ -31,7 +36,7 @@ export const MerchantSavings = ({ connectedAddress, liquidBalance, onBalanceChan
         setSavingsBalance(data.savingsBalance || "0");
         setTotalEarned(data.totalEarned || "0");
         setTotalWithdrawnInterest(data.totalWithdrawnInterest || "0");
-        
+
         // Notify parent of the loaded withdrawn interest
         if (data.totalWithdrawnInterest && parseFloat(data.totalWithdrawnInterest) > 0) {
           setTimeout(() => onWithdrawnInterestChange(data.totalWithdrawnInterest), 0);
@@ -39,7 +44,7 @@ export const MerchantSavings = ({ connectedAddress, liquidBalance, onBalanceChan
       }
       setIsDataLoaded(true); // Mark data as loaded
     }
-  }, [connectedAddress]); // Remove onWithdrawnInterestChange from dependencies
+  }, [connectedAddress, onWithdrawnInterestChange]); // Add onWithdrawnInterestChange to dependencies
 
   // Save data to localStorage whenever savings data changes
   useEffect(() => {
@@ -48,7 +53,7 @@ export const MerchantSavings = ({ connectedAddress, liquidBalance, onBalanceChan
         savingsBalance,
         totalEarned,
         totalWithdrawnInterest,
-        lastUpdated: Date.now()
+        lastUpdated: Date.now(),
       };
       localStorage.setItem(`merchantSavings_${connectedAddress}`, JSON.stringify(savingsData));
     }
@@ -120,7 +125,9 @@ export const MerchantSavings = ({ connectedAddress, liquidBalance, onBalanceChan
       setDepositAmount("");
       setShowDepositModal(false);
 
-      alert(`Successfully deposited ${depositAmount} LIQUID to savings!\nYour available balance is now ${newMainBalance} LIQUID`);
+      alert(
+        `Successfully deposited ${depositAmount} LIQUID to savings!\nYour available balance is now ${newMainBalance} LIQUID`,
+      );
     } catch (error) {
       console.error("Deposit failed:", error);
       alert("Deposit failed. Please try again.");
@@ -159,7 +166,9 @@ export const MerchantSavings = ({ connectedAddress, liquidBalance, onBalanceChan
       setSavingsBalance("0");
       setTotalEarned("0");
 
-      alert(`Successfully withdrew ${parseFloat(withdrawAmount).toFixed(6)} LIQUID from savings!\nYour balance is now ${newMainBalance} LIQUID (including ${parseFloat(interestAmount).toFixed(6)} LIQUID interest earned!)`);
+      alert(
+        `Successfully withdrew ${parseFloat(withdrawAmount).toFixed(6)} LIQUID from savings!\nYour balance is now ${newMainBalance} LIQUID (including ${parseFloat(interestAmount).toFixed(6)} LIQUID interest earned!)`,
+      );
     } catch (error) {
       console.error("Withdrawal failed:", error);
       alert("Withdrawal failed. Please try again.");
@@ -196,11 +205,13 @@ export const MerchantSavings = ({ connectedAddress, liquidBalance, onBalanceChan
       // Reduce savings balance by the interest amount (keep principal)
       const principalAmount = (parseFloat(savingsBalance) - parseFloat(totalEarned)).toFixed(8);
       setSavingsBalance(principalAmount);
-      
+
       // Reset interest earned
       setTotalEarned("0");
 
-      alert(`Successfully withdrew ${parseFloat(interestAmount).toFixed(6)} LIQUID interest!\nYour balance is now ${newMainBalance} LIQUID\nPrincipal of ${parseFloat(principalAmount).toFixed(6)} LIQUID remains in savings.`);
+      alert(
+        `Successfully withdrew ${parseFloat(interestAmount).toFixed(6)} LIQUID interest!\nYour balance is now ${newMainBalance} LIQUID\nPrincipal of ${parseFloat(principalAmount).toFixed(6)} LIQUID remains in savings.`,
+      );
     } catch (error) {
       console.error("Interest withdrawal failed:", error);
       alert("Interest withdrawal failed. Please try again.");
@@ -248,7 +259,9 @@ export const MerchantSavings = ({ connectedAddress, liquidBalance, onBalanceChan
         {/* Total Withdrawn Interest */}
         <div className="bg-white rounded-lg p-4 border border-purple-200 shadow-sm">
           <div className="text-center">
-            <div className="text-2xl font-bold text-purple-600 mb-1">{parseFloat(totalWithdrawnInterest).toFixed(6)}</div>
+            <div className="text-2xl font-bold text-purple-600 mb-1">
+              {parseFloat(totalWithdrawnInterest).toFixed(6)}
+            </div>
             <div className="text-sm text-purple-700">Total Withdrawn</div>
             <div className="text-xs text-gray-500 mt-1">
               {parseFloat(totalWithdrawnInterest) > 0 ? "Profits taken" : "No withdrawals yet"}
@@ -316,11 +329,15 @@ export const MerchantSavings = ({ connectedAddress, liquidBalance, onBalanceChan
           <div className="space-y-2">
             <div className="flex justify-between">
               <span className="text-gray-600">Total Withdrawn:</span>
-              <span className="font-semibold text-purple-600">+{parseFloat(totalWithdrawnInterest).toFixed(6)} LIQUID</span>
+              <span className="font-semibold text-purple-600">
+                +{parseFloat(totalWithdrawnInterest).toFixed(6)} LIQUID
+              </span>
             </div>
             <div className="flex justify-between">
               <span className="text-base-content opacity-70">Lifetime Interest:</span>
-              <span className="font-semibold text-accent">+{(parseFloat(totalEarned) + parseFloat(totalWithdrawnInterest)).toFixed(6)} LIQUID</span>
+              <span className="font-semibold text-accent">
+                +{(parseFloat(totalEarned) + parseFloat(totalWithdrawnInterest)).toFixed(6)} LIQUID
+              </span>
             </div>
             <div className="flex justify-between border-t border-base-300 pt-2">
               <span className="text-base-content font-semibold">Total Value:</span>
@@ -391,14 +408,17 @@ export const MerchantSavings = ({ connectedAddress, liquidBalance, onBalanceChan
             <div className="bg-green-50 p-3 rounded-md mb-4">
               <div className="text-sm text-green-800">
                 <div>
-                  Estimated yearly earnings: {((parseFloat(depositAmount || "0") * currentAPY) / 100).toFixed(6)}{" "}
-                  LIQUID
+                  Estimated yearly earnings: {((parseFloat(depositAmount || "0") * currentAPY) / 100).toFixed(6)} LIQUID
                 </div>
                 <div>Interest compounds every second</div>
                 <div className="mt-2 pt-2 border-t border-green-200">
                   <strong>After deposit:</strong>
-                  <div>Available: {(parseFloat(availableBalance) - parseFloat(depositAmount || "0")).toFixed(4)} LIQUID</div>
-                  <div>In Savings: {(parseFloat(savingsBalance) + parseFloat(depositAmount || "0")).toFixed(6)} LIQUID</div>
+                  <div>
+                    Available: {(parseFloat(availableBalance) - parseFloat(depositAmount || "0")).toFixed(4)} LIQUID
+                  </div>
+                  <div>
+                    In Savings: {(parseFloat(savingsBalance) + parseFloat(depositAmount || "0")).toFixed(6)} LIQUID
+                  </div>
                 </div>
               </div>
             </div>

@@ -289,359 +289,364 @@ const StudentWallet = () => {
 
       {/* Payment Steps Container */}
       <div className="max-w-md mx-auto">
+        {/* Step 1: QR Scanner */}
+        {step === "scan" && (
+          <div className="bg-base-100 rounded-lg shadow-md p-6">
+            <h2 className="text-xl font-semibold mb-4 text-center text-base-content">Scan Merchant QR Code</h2>
 
-      {/* Step 1: QR Scanner */}
-      {step === "scan" && (
-        <div className="bg-base-100 rounded-lg shadow-md p-6">
-          <h2 className="text-xl font-semibold mb-4 text-center text-base-content">Scan Merchant QR Code</h2>
-
-          {!scannerActive ? (
-            <div className="text-center">
-              <div className="mb-4">
-                <div className="w-32 h-32 mx-auto bg-base-200 rounded-lg flex items-center justify-center mb-4">
-                  <svg
-                    className="w-16 h-16 text-base-content opacity-60"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
+            {!scannerActive ? (
+              <div className="text-center">
+                <div className="mb-4">
+                  <div className="w-32 h-32 mx-auto bg-base-200 rounded-lg flex items-center justify-center mb-4">
+                    <svg
+                      className="w-16 h-16 text-base-content opacity-60"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M12 12h-4.01M12 12v4m6-4h.01M12 8h.01M12 8h4.01M12 8h-4.01"
+                      />
+                    </svg>
+                  </div>
+                  <button
+                    onClick={() => setScannerActive(true)}
+                    className="w-full bg-primary text-primary-content py-3 px-4 rounded-md hover:bg-primary-focus font-semibold mb-4"
                   >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M12 12h-4.01M12 12v4m6-4h.01M12 8h.01M12 8h4.01M12 8h-4.01"
-                    />
-                  </svg>
+                    Start Camera Scanner
+                  </button>
                 </div>
-                <button
-                  onClick={() => setScannerActive(true)}
-                  className="w-full bg-primary text-primary-content py-3 px-4 rounded-md hover:bg-primary-focus font-semibold mb-4"
-                >
-                  Start Camera Scanner
-                </button>
+
+                {/* Manual entry option */}
+                <div className="mt-4 pt-4 border-t border-base-300">
+                  <p className="text-sm text-base-content opacity-70 mb-2">Or enter merchant address manually:</p>
+                  <input
+                    type="text"
+                    placeholder="0x..."
+                    value={merchantAddress}
+                    onChange={e => setMerchantAddress(e.target.value)}
+                    className="w-full px-3 py-2 border border-base-300 bg-base-100 text-base-content rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                  />
+                  <button
+                    onClick={() => {
+                      if (merchantAddress.match(/^0x[a-fA-F0-9]{40}$/)) {
+                        setStep("amount");
+                      } else {
+                        toast.error("Invalid address format");
+                      }
+                    }}
+                    disabled={!merchantAddress}
+                    className="w-full mt-2 bg-primary text-primary-content py-2 px-4 rounded-md hover:bg-primary-focus disabled:opacity-50"
+                  >
+                    Continue
+                  </button>
+                </div>
               </div>
-
-              {/* Manual entry option */}
-              <div className="mt-4 pt-4 border-t border-base-300">
-                <p className="text-sm text-base-content opacity-70 mb-2">Or enter merchant address manually:</p>
-                <input
-                  type="text"
-                  placeholder="0x..."
-                  value={merchantAddress}
-                  onChange={e => setMerchantAddress(e.target.value)}
-                  className="w-full px-3 py-2 border border-base-300 bg-base-100 text-base-content rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-                />
-                <button
-                  onClick={() => {
-                    if (merchantAddress.match(/^0x[a-fA-F0-9]{40}$/)) {
-                      setStep("amount");
-                    } else {
-                      toast.error("Invalid address format");
-                    }
-                  }}
-                  disabled={!merchantAddress}
-                  className="w-full mt-2 bg-primary text-primary-content py-2 px-4 rounded-md hover:bg-primary-focus disabled:opacity-50"
-                >
-                  Continue
-                </button>
-              </div>
-            </div>
-          ) : (
-            <div>
-              <div className="mb-4">
-                <QRScanner onScan={handleScan} onError={handleScanError} isActive={scannerActive} />
-              </div>
-
-              <button
-                onClick={() => setScannerActive(false)}
-                className="w-full bg-red-600 text-white py-2 px-4 rounded-md hover:bg-red-700"
-              >
-                Close Scanner
-              </button>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Step 2: Enter Amount */}
-      {step === "amount" && (
-        <div className="bg-base-100 rounded-lg shadow-md p-6">
-          <h2 className="text-xl font-semibold mb-4 text-center text-base-content">Enter Payment Amount</h2>
-
-          {/* Merchant Info */}
-          <div className="mb-6 p-4 bg-base-200 rounded-lg">
-            <div className="text-sm text-base-content opacity-70 mb-1">Paying to:</div>
-            <div className="font-semibold text-base-content">{merchantInfo?.[0] || "Unknown Merchant"}</div>
-            <div className="text-xs text-base-content opacity-50 mt-1 font-mono">{merchantAddress}</div>
-
-            {isMerchant ? (
-              <div className="text-success text-sm mt-2">Verified Merchant</div>
             ) : (
-              <div className="text-error text-sm mt-2">Unregistered Address</div>
+              <div>
+                <div className="mb-4">
+                  <QRScanner onScan={handleScan} onError={handleScanError} isActive={scannerActive} />
+                </div>
+
+                <button
+                  onClick={() => setScannerActive(false)}
+                  className="w-full bg-red-600 text-white py-2 px-4 rounded-md hover:bg-red-700"
+                >
+                  Close Scanner
+                </button>
+              </div>
             )}
           </div>
+        )}
 
-          {/* Currency Input */}
-          <div className="mb-6">
-            <label className="block text-sm font-medium text-base-content mb-3">Payment Amount</label>
-            <CurrencyInput onAmountChange={handleCurrencyAmountChange} disabled={isProcessing} className="w-full" />
-          </div>
+        {/* Step 2: Enter Amount */}
+        {step === "amount" && (
+          <div className="bg-base-100 rounded-lg shadow-md p-6">
+            <h2 className="text-xl font-semibold mb-4 text-center text-base-content">Enter Payment Amount</h2>
 
-          {/* Action Buttons */}
-          <div className="space-y-3">
-            <button
-              onClick={() => setStep("confirm")}
-              disabled={!paymentAmount || parseFloat(paymentAmount) <= 0}
-              className="w-full bg-primary text-primary-content py-3 px-4 rounded-md hover:bg-primary-focus disabled:opacity-50 disabled:cursor-not-allowed font-semibold"
-            >
-              Review Payment
-            </button>
-
-            <button
-              onClick={() => setStep("scan")}
-              className="w-full bg-base-300 text-base-content py-2 px-4 rounded-md hover:bg-base-200"
-            >
-              Back to Scanner
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Step 3: Confirm Payment */}
-      {step === "confirm" && (
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <h2 className="text-xl font-semibold mb-4 text-center">Confirm Payment</h2>
-
-          {/* Payment Summary */}
-          <div className="space-y-4 mb-6">
-            <div className="p-4 bg-gray-50 rounded-lg">
-              <div className="text-sm text-gray-600">Merchant</div>
-              <div className="font-semibold">{merchantInfo?.[0] || "Unknown"}</div>
-              <div className="text-xs text-gray-500 font-mono">{merchantAddress}</div>
-            </div>
-
-            <div className="p-4 bg-blue-50 rounded-lg space-y-2">
-              <div className="text-sm text-blue-800">Payment Amount</div>
-              <div className="text-xl font-bold text-blue-900">
-                {ugxAmount ? `${parseFloat(ugxAmount).toLocaleString()} UGX` : "0 UGX"}
-              </div>
-              <div className="text-lg font-semibold text-blue-700">≈ {paymentAmount} LIQUID</div>
-            </div>
-          </div>
-
-          {/* Balance Check */}
-          <div className="mb-6 p-3 bg-yellow-50 rounded-lg">
-            <div className="text-sm">
-              <div>Your Balance: {parseFloat(displayBalance).toFixed(4)} LIQUID</div>
-              <div>After Payment: {(parseFloat(displayBalance) - parseFloat(paymentAmount)).toFixed(4)} LIQUID</div>
-            </div>
-          </div>
-
-          {/* Action Buttons */}
-          <div className="space-y-3">
-            <button
-              onClick={handlePayment}
-              disabled={isProcessing || parseFloat(displayBalance) < parseFloat(paymentAmount)}
-              className="w-full bg-green-600 text-white py-3 px-4 rounded-md hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed font-semibold"
-            >
-              {isProcessing ? "Processing..." : "Confirm & Pay"}
-            </button>
-
-            <button
-              onClick={() => setStep("amount")}
-              disabled={isProcessing}
-              className="w-full bg-gray-600 text-white py-2 px-4 rounded-md hover:bg-gray-700 disabled:opacity-50"
-            >
-              Back to Edit Amount
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Step 4: Processing */}
-      {step === "processing" && (
-        <div className="bg-white rounded-lg shadow-md p-6 text-center">
-          <div className="animate-spin w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full mx-auto mb-4"></div>
-          <h2 className="text-xl font-semibold mb-2">Processing Payment...</h2>
-          <p className="text-gray-600 mb-4">Please wait while we process your transaction</p>
-          <div className="text-sm text-gray-500">This may take a few seconds</div>
-        </div>
-      )}
-
-      {/* Step 5: Dashboard */}
-      {step === "dashboard" && (
-        <div className="bg-base-100 rounded-lg shadow-md p-6">
-          <h2 className="text-xl font-semibold mb-4 text-center text-base-content">Spending Dashboard</h2>
-
-          {/* Current Balance */}
-          <div className="mb-6 p-4 bg-gradient-to-r from-primary from-opacity-10 to-success to-opacity-10 rounded-lg border border-primary border-opacity-20">
-            <div className="text-center">
-              <div className="text-sm text-base-content opacity-70 mb-1">Current Balance</div>
-              <div className="text-3xl font-bold text-green-600">{parseFloat(displayBalance).toFixed(4)} LIQUID</div>
-            </div>
-          </div>
-
-          {/* Summary Stats */}
-          <div className="grid grid-cols-2 gap-4 mb-6">
-            <div className="p-4 bg-info bg-opacity-20 rounded-lg text-center border border-info border-opacity-30">
-              <div className="text-2xl font-bold text-blue-600">{studentTransactions?.length || 0}</div>
-              <div className="text-sm text-blue-800">Total Payments</div>
-            </div>
-            <div className="p-4 bg-error bg-opacity-20 rounded-lg text-center border border-error border-opacity-30">
-              <div className="text-2xl font-bold text-red-600">
-                {studentTransactions
-                  ?.reduce((total, tx) => {
-                    return total + parseFloat(formatUnits(tx.amount, 18));
-                  }, 0)
-                  .toFixed(2) || "0.00"}
-              </div>
-              <div className="text-sm text-red-800">Total Spent (LIQUID)</div>
-            </div>
-          </div>
-
-          {/* Quick Stats */}
-          {studentTransactions && studentTransactions.length > 0 && (
+            {/* Merchant Info */}
             <div className="mb-6 p-4 bg-base-200 rounded-lg">
-              <div className="text-sm text-base-content opacity-70 mb-2">Quick Stats</div>
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div>
-                  <span className="text-base-content opacity-60">Largest Payment:</span>
-                  <div className="font-semibold text-gray-900">
-                    {Math.max(...studentTransactions.map(tx => parseFloat(formatUnits(tx.amount, 18)))).toFixed(4)}{" "}
-                    LIQUID
-                  </div>
+              <div className="text-sm text-base-content opacity-70 mb-1">Paying to:</div>
+              <div className="font-semibold text-base-content">{merchantInfo?.[0] || "Unknown Merchant"}</div>
+              <div className="text-xs text-base-content opacity-50 mt-1 font-mono">{merchantAddress}</div>
+
+              {isMerchant ? (
+                <div className="text-success text-sm mt-2">Verified Merchant</div>
+              ) : (
+                <div className="text-error text-sm mt-2">Unregistered Address</div>
+              )}
+            </div>
+
+            {/* Currency Input */}
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-base-content mb-3">Payment Amount</label>
+              <CurrencyInput onAmountChange={handleCurrencyAmountChange} disabled={isProcessing} className="w-full" />
+            </div>
+
+            {/* Action Buttons */}
+            <div className="space-y-3">
+              <button
+                onClick={() => setStep("confirm")}
+                disabled={!paymentAmount || parseFloat(paymentAmount) <= 0}
+                className="w-full bg-primary text-primary-content py-3 px-4 rounded-md hover:bg-primary-focus disabled:opacity-50 disabled:cursor-not-allowed font-semibold"
+              >
+                Review Payment
+              </button>
+
+              <button
+                onClick={() => setStep("scan")}
+                className="w-full bg-base-300 text-base-content py-2 px-4 rounded-md hover:bg-base-200"
+              >
+                Back to Scanner
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Step 3: Confirm Payment */}
+        {step === "confirm" && (
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <h2 className="text-xl font-semibold mb-4 text-center">Confirm Payment</h2>
+
+            {/* Payment Summary */}
+            <div className="space-y-4 mb-6">
+              <div className="p-4 bg-gray-50 rounded-lg">
+                <div className="text-sm text-gray-600">Merchant</div>
+                <div className="font-semibold">{merchantInfo?.[0] || "Unknown"}</div>
+                <div className="text-xs text-gray-500 font-mono">{merchantAddress}</div>
+              </div>
+
+              <div className="p-4 bg-blue-50 rounded-lg space-y-2">
+                <div className="text-sm text-blue-800">Payment Amount</div>
+                <div className="text-xl font-bold text-blue-900">
+                  {ugxAmount ? `${parseFloat(ugxAmount).toLocaleString()} UGX` : "0 UGX"}
                 </div>
-                <div>
-                  <span className="text-base-content opacity-60">Average Payment:</span>
-                  <div className="font-semibold text-gray-900">
-                    {(
-                      studentTransactions.reduce((total, tx) => total + parseFloat(formatUnits(tx.amount, 18)), 0) /
-                      studentTransactions.length
-                    ).toFixed(4)}{" "}
-                    LIQUID
-                  </div>
-                </div>
+                <div className="text-lg font-semibold text-blue-700">≈ {paymentAmount} LIQUID</div>
               </div>
             </div>
-          )}
 
-          {/* Transaction History */}
-          <div className="mb-4">
-            <h3 className="text-lg font-semibold mb-3 text-base-content">Recent Transactions</h3>
-
-            {!studentTransactions || studentTransactions.length === 0 ? (
-              <div className="text-center py-8 text-base-content opacity-60">
-                <div>No transactions yet</div>
-                <div className="text-sm">Make your first payment to see it here!</div>
+            {/* Balance Check */}
+            <div className="mb-6 p-3 bg-yellow-50 rounded-lg">
+              <div className="text-sm">
+                <div>Your Balance: {parseFloat(displayBalance).toFixed(4)} LIQUID</div>
+                <div>After Payment: {(parseFloat(displayBalance) - parseFloat(paymentAmount)).toFixed(4)} LIQUID</div>
               </div>
-            ) : (
-              <div className="relative">
-                <div className="space-y-3 max-h-48 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+            </div>
+
+            {/* Action Buttons */}
+            <div className="space-y-3">
+              <button
+                onClick={handlePayment}
+                disabled={isProcessing || parseFloat(displayBalance) < parseFloat(paymentAmount)}
+                className="w-full bg-green-600 text-white py-3 px-4 rounded-md hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed font-semibold"
+              >
+                {isProcessing ? "Processing..." : "Confirm & Pay"}
+              </button>
+
+              <button
+                onClick={() => setStep("amount")}
+                disabled={isProcessing}
+                className="w-full bg-gray-600 text-white py-2 px-4 rounded-md hover:bg-gray-700 disabled:opacity-50"
+              >
+                Back to Edit Amount
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Step 4: Processing */}
+        {step === "processing" && (
+          <div className="bg-white rounded-lg shadow-md p-6 text-center">
+            <div className="animate-spin w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full mx-auto mb-4"></div>
+            <h2 className="text-xl font-semibold mb-2">Processing Payment...</h2>
+            <p className="text-gray-600 mb-4">Please wait while we process your transaction</p>
+            <div className="text-sm text-gray-500">This may take a few seconds</div>
+          </div>
+        )}
+
+        {/* Step 5: Dashboard */}
+        {step === "dashboard" && (
+          <div className="bg-base-100 rounded-lg shadow-md p-6">
+            <h2 className="text-xl font-semibold mb-4 text-center text-base-content">Spending Dashboard</h2>
+
+            {/* Current Balance */}
+            <div className="mb-6 p-4 bg-gradient-to-r from-primary from-opacity-10 to-success to-opacity-10 rounded-lg border border-primary border-opacity-20">
+              <div className="text-center">
+                <div className="text-sm text-base-content opacity-70 mb-1">Current Balance</div>
+                <div className="text-3xl font-bold text-green-600">{parseFloat(displayBalance).toFixed(4)} LIQUID</div>
+              </div>
+            </div>
+
+            {/* Summary Stats */}
+            <div className="grid grid-cols-2 gap-4 mb-6">
+              <div className="p-4 bg-info bg-opacity-20 rounded-lg text-center border border-info border-opacity-30">
+                <div className="text-2xl font-bold text-blue-600">{studentTransactions?.length || 0}</div>
+                <div className="text-sm text-blue-800">Total Payments</div>
+              </div>
+              <div className="p-4 bg-error bg-opacity-20 rounded-lg text-center border border-error border-opacity-30">
+                <div className="text-2xl font-bold text-red-600">
                   {studentTransactions
-                    .slice()
-                    .reverse()
-                    .slice(0, 10) // Show only last 10 transactions
-                    .map((transaction, index) => (
-                      <div key={index} className="p-4 border border-base-300 bg-base-100 rounded-lg hover:bg-base-200">
-                        <div className="flex justify-between items-start mb-2">
-                          <div className="flex-1">
-                            <div className="font-semibold text-base-content flex items-center">
-                              Payment to Merchant
-                              <span className="ml-2 px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">
-                                Completed
-                              </span>
+                    ?.reduce((total, tx) => {
+                      return total + parseFloat(formatUnits(tx.amount, 18));
+                    }, 0)
+                    .toFixed(2) || "0.00"}
+                </div>
+                <div className="text-sm text-red-800">Total Spent (LIQUID)</div>
+              </div>
+            </div>
+
+            {/* Quick Stats */}
+            {studentTransactions && studentTransactions.length > 0 && (
+              <div className="mb-6 p-4 bg-base-200 rounded-lg">
+                <div className="text-sm text-base-content opacity-70 mb-2">Quick Stats</div>
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <span className="text-base-content opacity-60">Largest Payment:</span>
+                    <div className="font-semibold text-gray-900">
+                      {Math.max(...studentTransactions.map(tx => parseFloat(formatUnits(tx.amount, 18)))).toFixed(4)}{" "}
+                      LIQUID
+                    </div>
+                  </div>
+                  <div>
+                    <span className="text-base-content opacity-60">Average Payment:</span>
+                    <div className="font-semibold text-gray-900">
+                      {(
+                        studentTransactions.reduce((total, tx) => total + parseFloat(formatUnits(tx.amount, 18)), 0) /
+                        studentTransactions.length
+                      ).toFixed(4)}{" "}
+                      LIQUID
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Transaction History */}
+            <div className="mb-4">
+              <h3 className="text-lg font-semibold mb-3 text-base-content">Recent Transactions</h3>
+
+              {!studentTransactions || studentTransactions.length === 0 ? (
+                <div className="text-center py-8 text-base-content opacity-60">
+                  <div>No transactions yet</div>
+                  <div className="text-sm">Make your first payment to see it here!</div>
+                </div>
+              ) : (
+                <div className="relative">
+                  <div className="space-y-3 max-h-48 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+                    {studentTransactions
+                      .slice()
+                      .reverse()
+                      .slice(0, 10) // Show only last 10 transactions
+                      .map((transaction, index) => (
+                        <div
+                          key={index}
+                          className="p-4 border border-base-300 bg-base-100 rounded-lg hover:bg-base-200"
+                        >
+                          <div className="flex justify-between items-start mb-2">
+                            <div className="flex-1">
+                              <div className="font-semibold text-base-content flex items-center">
+                                Payment to Merchant
+                                <span className="ml-2 px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">
+                                  Completed
+                                </span>
+                              </div>
+                              <div className="text-xs text-base-content opacity-50 font-mono mt-1">
+                                To: {transaction.merchant.slice(0, 6)}...{transaction.merchant.slice(-4)}
+                              </div>
                             </div>
-                            <div className="text-xs text-base-content opacity-50 font-mono mt-1">
-                              To: {transaction.merchant.slice(0, 6)}...{transaction.merchant.slice(-4)}
-                            </div>
-                          </div>
-                          <div className="text-right">
-                            <div className="font-bold text-red-600 text-lg">
-                              -{parseFloat(formatUnits(transaction.amount, 18)).toFixed(4)} LIQUID
-                            </div>
-                            <div className="text-xs text-base-content opacity-50">
-                              {new Date(Number(transaction.timestamp) * 1000).toLocaleDateString()}{" "}
-                              {new Date(Number(transaction.timestamp) * 1000).toLocaleTimeString([], {
-                                hour: "2-digit",
-                                minute: "2-digit",
-                              })}
+                            <div className="text-right">
+                              <div className="font-bold text-red-600 text-lg">
+                                -{parseFloat(formatUnits(transaction.amount, 18)).toFixed(4)} LIQUID
+                              </div>
+                              <div className="text-xs text-base-content opacity-50">
+                                {new Date(Number(transaction.timestamp) * 1000).toLocaleDateString()}{" "}
+                                {new Date(Number(transaction.timestamp) * 1000).toLocaleTimeString([], {
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                })}
+                              </div>
                             </div>
                           </div>
                         </div>
-                      </div>
-                    ))}
+                      ))}
+                  </div>
+
+                  {/* Scroll indicator */}
+                  {studentTransactions && studentTransactions.length > 2 && (
+                    <div className="absolute bottom-0 left-0 right-0 h-6 bg-gradient-to-t from-base-100 to-transparent pointer-events-none flex items-end justify-center">
+                      <div className="text-xs text-base-content opacity-40 mb-1">↓ Scroll for more ↓</div>
+                    </div>
+                  )}
+
+                  {studentTransactions && studentTransactions.length > 10 && (
+                    <div className="text-center py-2 text-base-content opacity-70 text-sm border-t border-base-300 mt-2">
+                      Showing last 10 transactions of {studentTransactions.length} total
+                    </div>
+                  )}
                 </div>
+              )}
+            </div>
 
-                {/* Scroll indicator */}
-                {studentTransactions && studentTransactions.length > 2 && (
-                  <div className="absolute bottom-0 left-0 right-0 h-6 bg-gradient-to-t from-base-100 to-transparent pointer-events-none flex items-end justify-center">
-                    <div className="text-xs text-base-content opacity-40 mb-1">↓ Scroll for more ↓</div>
-                  </div>
-                )}
+            {/* Quick Actions */}
+            <div className="pt-4 border-t border-base-300 space-y-2">
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  onClick={() => {
+                    refetchTransactions();
+                    setRefreshBalance(prev => prev + 1);
+                    refetchBalance();
+                    toast.success("Data refreshed!");
+                  }}
+                  className="bg-primary text-primary-content py-2 px-4 rounded-md hover:bg-primary-focus text-sm"
+                >
+                  Refresh
+                </button>
+                <button
+                  onClick={() => {
+                    if (studentTransactions && studentTransactions.length > 0) {
+                      const csvContent =
+                        "data:text/csv;charset=utf-8," +
+                        "Date,Time,Merchant,Amount (LIQUID)\n" +
+                        studentTransactions
+                          .map(tx => {
+                            const date = new Date(Number(tx.timestamp) * 1000);
+                            return `${date.toLocaleDateString()},${date.toLocaleTimeString()},${tx.merchant},${parseFloat(formatUnits(tx.amount, 18)).toFixed(4)}`;
+                          })
+                          .join("\n");
 
-                {studentTransactions && studentTransactions.length > 10 && (
-                  <div className="text-center py-2 text-base-content opacity-70 text-sm border-t border-base-300 mt-2">
-                    Showing last 10 transactions of {studentTransactions.length} total
-                  </div>
-                )}
+                      const encodedUri = encodeURI(csvContent);
+                      const link = document.createElement("a");
+                      link.setAttribute("href", encodedUri);
+                      link.setAttribute(
+                        "download",
+                        `liquid-transactions-${new Date().toISOString().split("T")[0]}.csv`,
+                      );
+                      document.body.appendChild(link);
+                      link.click();
+                      document.body.removeChild(link);
+                      toast.success("Transaction history exported!");
+                    } else {
+                      toast.error("No transactions to export");
+                    }
+                  }}
+                  className="bg-base-300 text-base-content py-2 px-4 rounded-md hover:bg-base-200 text-sm"
+                >
+                  Export
+                </button>
               </div>
-            )}
-          </div>
-
-          {/* Quick Actions */}
-          <div className="pt-4 border-t border-base-300 space-y-2">
-            <div className="grid grid-cols-2 gap-2">
               <button
-                onClick={() => {
-                  refetchTransactions();
-                  setRefreshBalance(prev => prev + 1);
-                  refetchBalance();
-                  toast.success("Data refreshed!");
-                }}
-                className="bg-primary text-primary-content py-2 px-4 rounded-md hover:bg-primary-focus text-sm"
+                onClick={() => setStep("scan")}
+                className="w-full bg-success text-success-content py-3 px-4 rounded-md hover:bg-success-focus font-semibold"
               >
-                Refresh
-              </button>
-              <button
-                onClick={() => {
-                  if (studentTransactions && studentTransactions.length > 0) {
-                    const csvContent =
-                      "data:text/csv;charset=utf-8," +
-                      "Date,Time,Merchant,Amount (LIQUID)\n" +
-                      studentTransactions
-                        .map(tx => {
-                          const date = new Date(Number(tx.timestamp) * 1000);
-                          return `${date.toLocaleDateString()},${date.toLocaleTimeString()},${tx.merchant},${parseFloat(formatUnits(tx.amount, 18)).toFixed(4)}`;
-                        })
-                        .join("\n");
-
-                    const encodedUri = encodeURI(csvContent);
-                    const link = document.createElement("a");
-                    link.setAttribute("href", encodedUri);
-                    link.setAttribute("download", `liquid-transactions-${new Date().toISOString().split("T")[0]}.csv`);
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
-                    toast.success("Transaction history exported!");
-                  } else {
-                    toast.error("No transactions to export");
-                  }
-                }}
-                className="bg-base-300 text-base-content py-2 px-4 rounded-md hover:bg-base-200 text-sm"
-              >
-                Export
+                Make New Payment
               </button>
             </div>
-            <button
-              onClick={() => setStep("scan")}
-              className="w-full bg-success text-success-content py-3 px-4 rounded-md hover:bg-success-focus font-semibold"
-            >
-              Make New Payment
-            </button>
           </div>
-        </div>
-      )}
-    </div>
+        )}
+      </div>
       {/* Student Savings Component */}
       <StudentSavings
         connectedAddress={connectedAddress}
