@@ -337,9 +337,6 @@ const MerchantHub = () => {
               <div className="text-center">
                 <div className="text-sm text-gray-600">LIQUID Balance:</div>
                 <div className="text-xl font-bold text-green-600">{parseFloat(displayBalance).toFixed(4)}</div>
-                <div className="text-xs text-gray-500">
-                  {localBalance ? "Local" : "Contract"} | Actual: {parseFloat(formattedBalance).toFixed(4)}
-                </div>
               </div>
               {parseFloat(withdrawnInterest) > 0 && (
                 <div className="text-center border-l border-gray-300 pl-4">
