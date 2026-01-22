@@ -56,7 +56,7 @@ export const useSoonPayAuth = () => {
       if (response.valid) {
         setAuthState({
           isAuthenticated: true,
-          user: response.user,
+          user: response.user || null,
           isLoading: false,
           error: null,
         });
@@ -170,7 +170,7 @@ export const useSoonPayAuth = () => {
 };
 
 // Simulated API functions (replace with actual SoonPay API calls)
-const validateAuthToken = async (token: string): Promise<{ valid: boolean; user?: SoonPayUser }> => {
+const validateAuthToken = async (token: string): Promise<{ valid: boolean; user: SoonPayUser | null }> => {
   // Simulate API delay
   await new Promise(resolve => setTimeout(resolve, 500));
 
@@ -198,9 +198,13 @@ const validateAuthToken = async (token: string): Promise<{ valid: boolean; user?
       },
     });
 
-    return await response.json();
+    const result = await response.json();
+    return {
+      valid: result.valid || false,
+      user: result.user || null,
+    };
   } catch (error) {
-    return { valid: false };
+    return { valid: false, user: null };
   }
 };
 
