@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Address } from "@scaffold-ui/components";
 import { QRCodeSVG } from "qrcode.react";
 import { formatEther } from "viem";
@@ -36,18 +36,35 @@ const MerchantHub = () => {
   const [localBalance, setLocalBalance] = useState<string | null>(null);
   const [withdrawnInterest, setWithdrawnInterest] = useState<string>("0");
 
+  // Load local balance from localStorage on component mount
+  useEffect(() => {
+    if (connectedAddress) {
+      const savedBalance = localStorage.getItem(`merchantBalance_${connectedAddress}`);
+      if (savedBalance) {
+        setLocalBalance(savedBalance);
+      }
+    }
+  }, [connectedAddress]);
+
+  // Save local balance to localStorage whenever it changes
+  useEffect(() => {
+    if (connectedAddress && localBalance !== null) {
+      localStorage.setItem(`merchantBalance_${connectedAddress}`, localBalance);
+    }
+  }, [connectedAddress, localBalance]);
+
   // Use local balance if available, otherwise use the actual balance
   const displayBalance = localBalance || formattedBalance;
 
   // Handle balance changes from savings component
-  const handleBalanceChange = (newBalance: string) => {
+  const handleBalanceChange = useCallback((newBalance: string) => {
     setLocalBalance(newBalance);
-  };
+  }, []);
 
   // Handle withdrawn interest changes from savings component
-  const handleWithdrawnInterestChange = (newWithdrawnInterest: string) => {
+  const handleWithdrawnInterestChange = useCallback((newWithdrawnInterest: string) => {
     setWithdrawnInterest(newWithdrawnInterest);
-  };
+  }, []);
 
   // Read merchant information from the smart contract
   const {
@@ -72,11 +89,7 @@ const MerchantHub = () => {
   });
 
   // Get merchant's transaction history
-  const {
-    data: transactions,
-    error: transactionsError,
-    refetch: refetchTransactions,
-  } = useScaffoldReadContract({
+  const { data: transactions, refetch: refetchTransactions } = useScaffoldReadContract({
     contractName: "MerchantService",
     functionName: "getMerchantTransactions",
     args: [connectedAddress],
@@ -160,42 +173,27 @@ const MerchantHub = () => {
 
   const todaysSales = getTodaysSales();
 
-  // Auto-refresh data every 10 seconds
+  // Auto-refresh data every 30 seconds (reduced frequency)
   useEffect(() => {
     if (isMerchant && connectedAddress) {
       const interval = setInterval(() => {
         console.log("Auto-refreshing merchant data...");
         refetchTransactions();
         refetchMerchantInfo();
-      }, 10000); // 10 seconds
+      }, 30000); // 30 seconds instead of 10
 
       return () => clearInterval(interval);
     }
-  }, [isMerchant, connectedAddress, refetchTransactions, refetchMerchantInfo]);
+  }, [isMerchant, connectedAddress, refetchTransactions, refetchMerchantInfo]); // Add missing dependencies
 
-  // Debug logging
+  // Handle registration status - simplified to avoid setState during render
   useEffect(() => {
-    console.log("=== Merchant Registration Status ===");
-    console.log("isMerchant:", isMerchant);
-    console.log("locallyRegistered:", locallyRegistered);
-    console.log("merchantInfo:", merchantInfo);
-    console.log("Should show registration form:", (!isMerchant || isMerchant === undefined) && !locallyRegistered);
-
     // If contract confirms registration, we can clear the local flag
     if (isMerchant && locallyRegistered) {
       setLocallyRegistered(false);
       setRegistrationSuccess(false);
     }
-  }, [
-    isMerchant,
-    connectedAddress,
-    merchantInfo,
-    transactions,
-    locallyRegistered,
-    merchantStatusError,
-    merchantInfoError,
-    transactionsError,
-  ]);
+  }, [isMerchant, locallyRegistered]); // Simplified dependencies
 
   // If wallet not connected
   if (!connectedAddress) {
@@ -339,6 +337,9 @@ const MerchantHub = () => {
               <div className="text-center">
                 <div className="text-sm text-gray-600">LIQUID Balance:</div>
                 <div className="text-xl font-bold text-green-600">{parseFloat(displayBalance).toFixed(4)}</div>
+                <div className="text-xs text-gray-500">
+                  {localBalance ? "Local" : "Contract"} | Actual: {parseFloat(formattedBalance).toFixed(4)}
+                </div>
               </div>
               {parseFloat(withdrawnInterest) > 0 && (
                 <div className="text-center border-l border-gray-300 pl-4">

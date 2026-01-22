@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useNotifications } from "~~/hooks/useNotifications";
 import { NotificationContainer } from "~~/components/CustomNotification";
 
@@ -31,6 +31,9 @@ export const StudentSavings = ({
   const [depositAmount, setDepositAmount] = useState("");
   const [showDepositModal, setShowDepositModal] = useState(false);
 
+  // Use ref to track interval to avoid stale closures
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+
   // Load saved data from localStorage on component mount
   useEffect(() => {
     if (connectedAddress) {
@@ -48,7 +51,7 @@ export const StudentSavings = ({
       }
       setIsDataLoaded(true); // Mark data as loaded
     }
-  }, [connectedAddress, onWithdrawnInterestChange]); // Add onWithdrawnInterestChange to dependencies
+  }, [connectedAddress, onWithdrawnInterestChange]); // Add callback back since ESLint requires it
 
   // Save data to localStorage whenever savings data changes
   useEffect(() => {
@@ -68,37 +71,47 @@ export const StudentSavings = ({
 
   // Real-time interest accrual simulation (for demo purposes)
   useEffect(() => {
-    if (parseFloat(savingsBalance) > 0) {
-      const interval = setInterval(() => {
-        setSavingsBalance(prev => {
-          const currentBalance = parseFloat(prev);
+    // Clear any existing interval
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
+
+    // Only start interval if data is loaded (regardless of current balance)
+    if (isDataLoaded) {
+      intervalRef.current = setInterval(() => {
+        // Use functional updates to get the most current state
+        setSavingsBalance(prevSavings => {
+          const currentBalance = parseFloat(prevSavings);
+          if (currentBalance <= 0) return prevSavings;
+
           // Calculate interest per second: APY / (365 * 24 * 60 * 60)
           const interestPerSecond = currentAPY / 100 / (365 * 24 * 60 * 60);
-          const newBalance = currentBalance * (1 + interestPerSecond);
+          const interestAmount = currentBalance * interestPerSecond;
+          const newBalance = currentBalance + interestAmount;
+
+          // Update total earned in the same functional update cycle
+          setTotalEarned(prevEarned => {
+            const newEarned = parseFloat(prevEarned) + interestAmount;
+            return newEarned.toFixed(8);
+          });
+
           return newBalance.toFixed(8);
         });
-
-        setTotalEarned(prev => {
-          const currentEarned = parseFloat(prev);
-          const savingsBalanceNum = parseFloat(savingsBalance);
-          if (savingsBalanceNum > 0) {
-            const interestPerSecond = currentAPY / 100 / (365 * 24 * 60 * 60);
-            const interestEarned = savingsBalanceNum * interestPerSecond;
-            return (currentEarned + interestEarned).toFixed(8);
-          }
-          return prev;
-        });
       }, 1000); // Update every second for demo effect
-
-      return () => clearInterval(interval);
     }
-  }, [savingsBalance, currentAPY]);
 
-  // Notify parent when withdrawn interest changes
-  useEffect(() => {
-    onWithdrawnInterestChange(totalWithdrawnInterest);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [totalWithdrawnInterest]);
+    // Cleanup function
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+    };
+  }, [isDataLoaded, currentAPY]); // Only depend on isDataLoaded and currentAPY
+
+  // Notify parent when withdrawn interest changes (only during load)
+  // Note: We don't need a useEffect here as we notify parent during actual withdrawal operations
 
   // Handle deposit (simulated)
   const handleDeposit = async () => {
@@ -162,11 +175,11 @@ export const StudentSavings = ({
       onBalanceChange(newMainBalance);
 
       // Update total withdrawn interest (add current interest to total)
-      setTotalWithdrawnInterest(prev => {
-        const newWithdrawnTotal = (parseFloat(prev) + parseFloat(interestAmount)).toFixed(8);
-        onWithdrawnInterestChange(newWithdrawnTotal); // Notify parent
-        return newWithdrawnTotal;
-      });
+      const newWithdrawnTotal = (parseFloat(totalWithdrawnInterest) + parseFloat(interestAmount)).toFixed(8);
+      setTotalWithdrawnInterest(newWithdrawnTotal);
+
+      // Notify parent after state update
+      onWithdrawnInterestChange(newWithdrawnTotal);
 
       // Reset savings
       setSavingsBalance("0");
@@ -203,11 +216,11 @@ export const StudentSavings = ({
       onBalanceChange(newMainBalance);
 
       // Update total withdrawn interest
-      setTotalWithdrawnInterest(prev => {
-        const newWithdrawnTotal = (parseFloat(prev) + parseFloat(interestAmount)).toFixed(8);
-        onWithdrawnInterestChange(newWithdrawnTotal); // Notify parent
-        return newWithdrawnTotal;
-      });
+      const newWithdrawnTotal = (parseFloat(totalWithdrawnInterest) + parseFloat(interestAmount)).toFixed(8);
+      setTotalWithdrawnInterest(newWithdrawnTotal);
+
+      // Notify parent after state update
+      onWithdrawnInterestChange(newWithdrawnTotal);
 
       // Reduce savings balance by the interest amount (keep principal)
       const principalAmount = (parseFloat(savingsBalance) - parseFloat(totalEarned)).toFixed(8);

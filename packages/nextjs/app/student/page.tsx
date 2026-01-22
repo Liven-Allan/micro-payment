@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { toast } from "react-hot-toast";
 import { formatUnits, parseEther } from "viem";
 import { useAccount, useWriteContract } from "wagmi";
@@ -44,9 +44,9 @@ const StudentWallet = () => {
   const displayBalance = localBalance || formattedBalance;
 
   // Handle balance changes from savings component
-  const handleBalanceChange = (newBalance: string) => {
+  const handleBalanceChange = useCallback((newBalance: string) => {
     setLocalBalance(newBalance);
-  };
+  }, []);
 
   // Get merchant info to verify it's a valid merchant
   const { data: merchantInfo } = useScaffoldReadContract({
