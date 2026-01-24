@@ -109,18 +109,7 @@ export const CurrencyInput = ({ onAmountChange, disabled = false, className = ""
         </div>
       </div>
 
-      {/* Cashback Preview */}
-      {liquidAmount && parseFloat(liquidAmount) > 0 && (
-        <div className="bg-green-50 p-3 rounded-md border border-green-200">
-          <div className="flex justify-between items-center">
-            <span className="text-sm text-green-700">💰 Cashback (5%):</span>
-            <span className="font-medium text-green-600">{(parseFloat(liquidAmount) * 0.05).toFixed(4)} LIQUID</span>
-          </div>
-          <div className="text-xs text-green-600 mt-1">
-            ≈ {(parseFloat(liquidToUgx(liquidAmount)) * 0.05).toFixed(0)} UGX
-          </div>
-        </div>
-      )}
+      {/* Cashback Preview removed */}
 
       {/* Error Display */}
       {error && (
